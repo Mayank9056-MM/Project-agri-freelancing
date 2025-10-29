@@ -17,9 +17,7 @@ export const verifyAuth = async (req, _, next) => {
       process.env.ACCESS_TOKEN_SECRET
     );
 
-    const user = await User.findById(decodedToken?._id).select(
-      "-password -refreshToken"
-    );
+    const user = await User.findById(decodedToken?._id)
 
     if (!user) {
       throw new ApiError(401, "Unauthorized");
