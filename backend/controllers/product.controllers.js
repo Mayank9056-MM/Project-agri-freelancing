@@ -67,10 +67,9 @@ export const updateProduct = async (req, res) => {
 
     if (!skuId) return res.status(400).json({ message: "sku is required" });
 
-    const productToUpdate = await Product.findOne({ sku: skuId });
+    const product = await Product.findOne({ sku: skuId });
 
-    if (!productToUpdate)
-      return res.status(404).json({ message: "Product not found" });
+    if (!product) return res.status(404).json({ message: "Product not found" });
 
     const { name, category, price, stock, unit, barcode, low_stock_threshold } =
       req.body;
@@ -79,7 +78,7 @@ export const updateProduct = async (req, res) => {
 
     if (req.file) {
       try {
-        image = await uploadOnCloudinary(req.file?.image);
+        image = await uploadOnCloudinary(req.file.path);
 
         if (!image) {
           throw new Error("something went wrong while uploading image");
@@ -100,12 +99,20 @@ export const updateProduct = async (req, res) => {
       image: image?.secure_url || product.image,
     };
 
-    const product = await Product.findOneAndUpdate({ sku: skuId }, fields, {
-      new: true,
-    });
-    if (!product) return res.status(404).json({ message: "Product not found" });
-    res.status(200).json(product);
+    const updatedProduct = await Product.findOneAndUpdate(
+      { sku: skuId },
+      fields,
+      {
+        new: true,
+      }
+    );
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.status(200).json({ product: updatedProduct });
   } catch (error) {
+    console.log(error);
     res.status(400).json({ message: error.message });
   }
 };
