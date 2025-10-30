@@ -8,17 +8,19 @@ export const createProduct = async (req, res) => {
 
     if (
       [name, category, price, stock, unit, barcode, low_stock_threshold].some(
-        (field) => field.trim() === ""
+        (field) => field?.trim() === ""
       )
     ) {
       throw new Error("some fields are missing");
     }
 
+    let image;
+
     if (req.file) {
       const imageLocalPath = req.file.path;
 
       try {
-        const image = await uploadOnCloudinary(imageLocalPath);
+        image = await uploadOnCloudinary(imageLocalPath);
 
         if (!image) {
           throw new Error("something went wrong while uploading image");
@@ -34,9 +36,9 @@ export const createProduct = async (req, res) => {
       price,
       stock,
       unit,
-      image: image.secureUrl || undefined,
       barcode,
       low_stock_threshold,
+      image: image?.secure_url || undefined,
     });
 
     if (!product) {
@@ -45,6 +47,7 @@ export const createProduct = async (req, res) => {
 
     res.status(201).json(product);
   } catch (error) {
+    console.log(error);
     res.status(400).json({ message: error.message });
   }
 };
@@ -123,4 +126,3 @@ export const deleteProduct = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-

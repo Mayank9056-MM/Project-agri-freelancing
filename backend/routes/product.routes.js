@@ -5,7 +5,7 @@ import { createProduct, deleteProduct, updateProduct } from "../controllers/prod
 
 const productRouter = express.Router()
 
-productRouter.route("/").post(verifyAuth,verifyAdmin,upload.single("image",createProduct))
+productRouter.route("/").post(verifyAuth,verifyAdmin,upload.single("image"),createProduct)
 productRouter.route("/:sku").patch(verifyAuth,verifyAdmin,upload.single("image"),updateProduct).delete(verifyAuth,verifyAdmin,deleteProduct)
 
 export default productRouter;

@@ -1,12 +1,10 @@
 import jwt from "jsonwebtoken";
-import User  from "../models/User.model.js";
+import User from "../models/User.model.js";
 
 export const verifyAuth = async (req, _, next) => {
   const accessToken =
     req.cookies.accessToken ||
     req.header("Authorization")?.replace("Bearer ", ""); // if sent from header/mobile
-
-    console.log(req)
 
   if (!accessToken) {
     throw new Error("Unathorized");
@@ -18,7 +16,7 @@ export const verifyAuth = async (req, _, next) => {
       process.env.ACCESS_TOKEN_SECRET
     );
 
-    const user = await User.findById(decodedToken?._id)
+    const user = await User.findById(decodedToken?._id);
 
     if (!user) {
       throw new Error("Unauthorized");
@@ -33,7 +31,7 @@ export const verifyAuth = async (req, _, next) => {
 
 export const verifyAdmin = (req, _, next) => {
   if (req?.user?.role !== "admin") {
-    throw new Error("Unauthorized");
+    throw new Error("Unauthorized as admin");
   }
   next();
 };

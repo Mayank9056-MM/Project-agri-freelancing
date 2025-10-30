@@ -4,7 +4,6 @@ const productSchema = new mongoose.Schema(
   {
     sku: {
       type: String,
-      required: true,
       unique: true,
     },
     name: {
@@ -12,10 +11,10 @@ const productSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    image:{
-    type: String,
-    required: true,
-    default: "/public/placeholder.png",
+    image: {
+      type: String,
+      required: true,
+      default: "/public/placeholder.png",
     },
     category: {
       type: String,
@@ -40,7 +39,7 @@ const productSchema = new mongoose.Schema(
     barcode: {
       type: String,
       unique: true,
-      sparse: true, 
+      sparse: true,
     },
     low_stock_threshold: {
       type: Number,
@@ -63,7 +62,6 @@ productSchema.pre("save", async function (next) {
 
   next();
 });
-
 
 const Product = mongoose.model("Product", productSchema);
 
