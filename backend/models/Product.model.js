@@ -50,6 +50,12 @@ productSchema.pre("save", async function (next) {
     const count = await mongoose.model("Product").countDocuments();
     this.sku = `SKU${String(count + 1).padStart(3, "0")}`;
   }
+
+  if (!this.barcode) {
+    const randomPart = Math.floor(100000000000 + Math.random() * 900000000000); // 12-digit number
+    this.barcode = String(randomPart);
+  }
+
   next();
 });
 

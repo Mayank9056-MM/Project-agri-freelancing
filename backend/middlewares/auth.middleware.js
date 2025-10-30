@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.models.js";
 
 export const verifyAuth = async (req, _, next) => {
@@ -8,7 +7,7 @@ export const verifyAuth = async (req, _, next) => {
     req.header("Authorization")?.replace("Bearer ", ""); // if sent from header/mobile
 
   if (!accessToken) {
-    throw new ApiError(401, "Unathorized");
+    throw new Error("Unathorized");
   }
 
   try {
@@ -19,13 +18,20 @@ export const verifyAuth = async (req, _, next) => {
 
     const user = await User.findById(decodedToken?._id)
 
-    if (!user) {
-      throw new ApiError(401, "Unauthorized");
+    if (user) {
+      throw new Error("Unauthorized");
     }
 
     req.user = user;
     next();
   } catch (error) {
-    throw new ApiError(401, error?.message || "Invalid access token");
+    throw new Error(error?.message || "Invalid access token");
   }
+};
+
+export const verifyAdmin = (req, _, next) => {
+  if (req?.user?.role !== "admin") {
+    throw new Error("Unauthorized");
+  }
+  next();
 };
