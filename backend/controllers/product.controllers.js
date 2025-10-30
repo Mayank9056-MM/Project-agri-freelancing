@@ -15,7 +15,7 @@ export const createProduct = async (req, res) => {
     }
 
     if (req.file) {
-      const imageLocalPath = req.file;
+      const imageLocalPath = req.file.path;
 
       try {
         const image = await uploadOnCloudinary(imageLocalPath);
@@ -72,9 +72,11 @@ export const updateProduct = async (req, res) => {
     const { name, category, price, stock, unit, barcode, low_stock_threshold } =
       req.body;
 
+    let image;
+
     if (req.file) {
       try {
-        const image = await uploadOnCloudinary(req.file?.image);
+        image = await uploadOnCloudinary(req.file?.image);
 
         if (!image) {
           throw new Error("something went wrong while uploading image");
@@ -92,7 +94,7 @@ export const updateProduct = async (req, res) => {
       unit: unit || product.unit,
       barcode: barcode || product.barcode,
       low_stock_threshold: low_stock_threshold || product.low_stock_threshold,
-      image: image?.secureUrl || product.image,
+      image: image?.secure_url || product.image,
     };
 
     const product = await Product.findOneAndUpdate({ sku: skuId }, fields, {

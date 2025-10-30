@@ -2,7 +2,7 @@ import User from "../models/User.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 // helper functions
-const generateAccessAndRefreshToken = async (userId) => {
+const generateAccessToken = async (userId) => {
   try {
     const user = await User.findById(userId);
     if (!user) {
@@ -11,8 +11,9 @@ const generateAccessAndRefreshToken = async (userId) => {
 
     const accessToken = user.generateAccessToken();
 
-    return { accessToken };
+    return accessToken ;
   } catch (error) {
+    console.log(error)
     throw new Error("Something went wrong while generating access token");
   }
 };
@@ -34,16 +35,19 @@ export const registerUser = async (req, res, next) => {
       throw new Error("user already exists");
     }
 
-    const avatarLocalFilePath = req?.file;
+    const avatarLocalFilePath = req?.file.path;
 
 
     if (!avatarLocalFilePath) {
       throw new Error("avatar local file path not found");
     }
 
-    try {
-      const avatar = await uploadOnCloudinary(avatarLocalFilePath);
+    let avatar;
 
+    try {
+      console.log(avatarLocalFilePath,"avatarLocalFilePath")
+
+      avatar = await uploadOnCloudinary(avatarLocalFilePath);
       if (!avatar) {
         throw new Error("something went wrong while uploading avatar");
       }
@@ -52,10 +56,12 @@ export const registerUser = async (req, res, next) => {
       throw new Error("something went wrong while uploading avatar", [error]);
     }
 
+    console.log(avatar,"avatar")
+
     const user = {
       fullName,
       email,
-      avatar: avatar?.secureUrl,
+      avatar: avatar?.secure_url || undefined,
       password,
     };
 
@@ -65,7 +71,7 @@ export const registerUser = async (req, res, next) => {
       throw new Error("something went wrong while creating user");
     }
 
-    return res.status(201).json(user);
+    return res.status(201).json(createdUser);
   } catch (error) {
     throw new Error(error.message);
   }
@@ -87,14 +93,14 @@ export const loginUser = async (req, res, next) => {
       throw new Error("user not found. Please register");
     }
 
-    const isValidPassword = await User.isPasswordCorrect(password);
+    const isValidPassword = await user.isPasswordCorrect(password);
 
     if (!isValidPassword) {
       throw new Error("Invalid password");
     }
 
-    const { accessToken } = await generateAccessAndRefreshToken(user._id);
-
+    const accessToken = await generateAccessToken(user._id);
+    console.log(accessToken,"accessToken")
     const options = {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
@@ -130,7 +136,7 @@ export const currentUser = async (req, res, next) => {
 };
 
 export const updateUserAvatar = async (req, res, next) => {
-  const avatarLocalFilePath = req?.file;
+  const avatarLocalFilePath = req?.file.path;
 
   if (!avatarLocalFilePath) {
     throw new Error("avatar local path not found");
@@ -146,7 +152,7 @@ export const updateUserAvatar = async (req, res, next) => {
     req.user._id,
     {
       $set: {
-        avatar: avatar.secureUrl,
+        avatar: avatar.secure_url,
       },
     },
     { new: true }
