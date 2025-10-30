@@ -1,4 +1,3 @@
-// controllers/barcodeController.js
 import bwipjs from "bwip-js";
 
 // Generate barcode image from number

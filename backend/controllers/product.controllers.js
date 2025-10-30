@@ -117,7 +117,6 @@ export const updateProduct = async (req, res) => {
   }
 };
 
-// Delete product
 export const deleteProduct = async (req, res) => {
   try {
     const skuId = req.params.sku;
