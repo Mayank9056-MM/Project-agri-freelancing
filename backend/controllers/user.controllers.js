@@ -1,9 +1,5 @@
 import User from "../models/User.model.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiError } from "../utils/ApiError.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
-import jwt from "jsonwebtoken";
 
 // helper functions
 const generateAccessAndRefreshToken = async (userId) => {
@@ -38,7 +34,8 @@ export const registerUser = async (req, res, next) => {
       throw new Error("user already exists");
     }
 
-    const avatarLocalFilePath = req?.file.avatar;
+    const avatarLocalFilePath = req?.file;
+
 
     if (!avatarLocalFilePath) {
       throw new Error("avatar local file path not found");
@@ -133,7 +130,7 @@ export const currentUser = async (req, res, next) => {
 };
 
 export const updateUserAvatar = async (req, res, next) => {
-  const avatarLocalFilePath = req?.file?.avatar;
+  const avatarLocalFilePath = req?.file;
 
   if (!avatarLocalFilePath) {
     throw new Error("avatar local path not found");

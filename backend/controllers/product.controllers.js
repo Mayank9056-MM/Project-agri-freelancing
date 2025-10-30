@@ -15,7 +15,7 @@ export const createProduct = async (req, res) => {
     }
 
     if (req.file) {
-      const imageLocalPath = req.file?.image;
+      const imageLocalPath = req.file;
 
       try {
         const image = await uploadOnCloudinary(imageLocalPath);

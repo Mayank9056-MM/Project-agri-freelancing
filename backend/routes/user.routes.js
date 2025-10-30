@@ -3,6 +3,7 @@ import {
   currentUser,
   loginUser,
   registerUser,
+  updateUserAvatar
 } from "../controllers/user.controllers.js";
 import { upload } from "../middlewares/multer.js";
 import { verifyAuth } from "../middlewares/auth.middleware.js";
