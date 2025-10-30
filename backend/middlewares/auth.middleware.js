@@ -6,6 +6,8 @@ export const verifyAuth = async (req, _, next) => {
     req.cookies.accessToken ||
     req.header("Authorization")?.replace("Bearer ", ""); // if sent from header/mobile
 
+    console.log(req)
+
   if (!accessToken) {
     throw new Error("Unathorized");
   }
@@ -18,7 +20,7 @@ export const verifyAuth = async (req, _, next) => {
 
     const user = await User.findById(decodedToken?._id)
 
-    if (user) {
+    if (!user) {
       throw new Error("Unauthorized");
     }
 

@@ -2,6 +2,7 @@ import express from "express";
 import {
   currentUser,
   loginUser,
+  logoutUser,
   registerUser,
   updateUserAvatar
 } from "../controllers/user.controllers.js";
@@ -15,6 +16,7 @@ userRouter.route("/login").post(loginUser);
 userRouter
   .route("/")
   .get(verifyAuth, currentUser)
-  .patch(verifyAuth, upload.single("avatar"), updateUserAvatar);
+  .patch(verifyAuth, upload.single("avatar"), updateUserAvatar)
+  .post(verifyAuth,logoutUser)
 
   export default userRouter;
