@@ -25,6 +25,7 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: String, // url
       required: true,
+      default: "/public/placeholder.png",
     },
     password: {
       type: String,

@@ -1,10 +1,10 @@
 import cookieParser from "cookie-parser";
-import express from "express"
+import express from "express";
 import morgan from "morgan";
-import cors from "cors"
-import 'dotenv/config'
+import cors from "cors";
+import "dotenv/config";
 
-const app = express()
+const app = express();
 
 // logger setup
 if (process.env.NODE_ENV === "development") {
@@ -27,7 +27,7 @@ if (process.env.NODE_ENV === "development") {
   );
 }
 
-  // Body parser middleware
+// Body parser middleware
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extends: true, limit: "16kb" }));
 app.use(cookieParser());
@@ -51,9 +51,16 @@ app.use(
 );
 
 // Api routes imports
-
+import userRouter from "./routes/user.routes.js";
+import saleRouter from "./routes/sale.routes.js";
+import productRouter from "./routes/product.routes.js";
+import barcodeRouter from "./routes/barcode.routes.js";
 
 // Api routes
+app.use("/api/v1/user", userRouter);
+app.use("/api/v1/sale", saleRouter);
+app.use("/api/v1/product", productRouter);
+app.use("/api/v1/barcode", barcodeRouter);
 
 app.use((req, res) => {
   res.status(404).json({
@@ -62,4 +69,4 @@ app.use((req, res) => {
   });
 });
 
-export {app}
+export { app };

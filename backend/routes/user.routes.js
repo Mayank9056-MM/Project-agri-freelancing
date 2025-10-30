@@ -1,0 +1,19 @@
+import express from "express";
+import {
+  currentUser,
+  loginUser,
+  registerUser,
+} from "../controllers/user.controllers.js";
+import { upload } from "../middlewares/multer.js";
+import { verifyAuth } from "../middlewares/auth.middleware.js";
+
+const userRouter = express.Router();
+
+userRouter.route("/register").post(upload.single("avatar"), registerUser);
+userRouter.route("/login").post(loginUser);
+userRouter
+  .route("/")
+  .get(verifyAuth, currentUser)
+  .patch(verifyAuth, upload.single("avatar"), updateUserAvatar);
+
+  export default userRouter;

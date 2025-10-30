@@ -1,4 +1,5 @@
-import { Product } from "../models/Product.js";
+import Product from "../models/Product.model.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 export const createProduct = async (req, res) => {
   try {
@@ -13,12 +14,27 @@ export const createProduct = async (req, res) => {
       throw new Error("some fields are missing");
     }
 
+    if (req.file) {
+      const imageLocalPath = req.file?.image;
+
+      try {
+        const image = await uploadOnCloudinary(imageLocalPath);
+
+        if (!image) {
+          throw new Error("something went wrong while uploading image");
+        }
+      } catch (error) {
+        throw new Error(error.message);
+      }
+    }
+
     const product = await Product.create({
       name,
       category,
       price,
       stock,
       unit,
+      image: image.secureUrl || undefined,
       barcode,
       low_stock_threshold,
     });
@@ -48,17 +64,35 @@ export const updateProduct = async (req, res) => {
 
     if (!skuId) return res.status(400).json({ message: "sku is required" });
 
+    const productToUpdate = await Product.findOne({ sku: skuId });
+
+    if (!productToUpdate)
+      return res.status(404).json({ message: "Product not found" });
+
     const { name, category, price, stock, unit, barcode, low_stock_threshold } =
       req.body;
 
+    if (req.file) {
+      try {
+        const image = await uploadOnCloudinary(req.file?.image);
+
+        if (!image) {
+          throw new Error("something went wrong while uploading image");
+        }
+      } catch (error) {
+        throw new Error(error.message);
+      }
+    }
+
     const fields = {
-      name,
-      category,
-      price,
-      stock,
-      unit,
-      barcode,
-      low_stock_threshold,
+      name: name || product.name,
+      category: category || product.category,
+      price: price || product.price,
+      stock: stock || product.stock,
+      unit: unit || product.unit,
+      barcode: barcode || product.barcode,
+      low_stock_threshold: low_stock_threshold || product.low_stock_threshold,
+      image: image?.secureUrl || product.image,
     };
 
     const product = await Product.findOneAndUpdate({ sku: skuId }, fields, {
