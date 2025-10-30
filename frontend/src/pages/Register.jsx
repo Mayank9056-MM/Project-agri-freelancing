@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { Moon, Sun, Mail, Lock, Eye, EyeOff, LogIn, Package } from 'lucide-react';
+import { Moon, Sun, Upload, User, Mail, Lock, Eye, EyeOff, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 
-const Login = () => {
+const Register = () => {
   const [theme, setTheme] = useState('dark');
   const [showPassword, setShowPassword] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState(null);
   const [formData, setFormData] = useState({
+    avatar: null,
+    fullName: '',
     email: '',
     password: ''
   });
@@ -17,16 +20,28 @@ const Login = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({ ...formData, avatar: file });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     // Here you would integrate with your AuthContext
-    console.log('Login submitted:', formData);
+    console.log('Form submitted:', formData);
   };
 
   const isDark = theme === 'dark';
 
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 lg:p-8 transition-colors duration-300 ${
+      <div className={`min-h-screen flex items-center justify-center p-4 lg:p-8 transition-colors duration-300 ${
       isDark ? 'bg-gradient-to-br from-gray-900 via-black to-gray-900' : 'bg-gradient-to-br from-gray-100 via-gray-50 to-gray-100'
     }`}>
       {/* Theme Toggle */}
@@ -56,23 +71,23 @@ const Login = () => {
                 <Package className={`h-10 w-10 ${isDark ? 'text-gray-300' : 'text-gray-700'}`} />
               </div>
               <h1 className={`text-4xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                Welcome Back
+                Join Our System
               </h1>
               <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Access your inventory management system
+                Start managing your inventory efficiently
               </p>
               <div className="pt-8 space-y-4">
                 <div className={`flex items-center gap-3 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                   <div className={`w-2 h-2 rounded-full ${isDark ? 'bg-gray-600' : 'bg-gray-400'}`} />
-                  <span>Track products and stock levels</span>
+                  <span>Seamless product management</span>
                 </div>
                 <div className={`flex items-center gap-3 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                   <div className={`w-2 h-2 rounded-full ${isDark ? 'bg-gray-600' : 'bg-gray-400'}`} />
-                  <span>Manage inventory efficiently</span>
+                  <span>Real-time stock tracking</span>
                 </div>
                 <div className={`flex items-center gap-3 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                   <div className={`w-2 h-2 rounded-full ${isDark ? 'bg-gray-600' : 'bg-gray-400'}`} />
-                  <span>Real-time stock updates</span>
+                  <span>Multi-user access control</span>
                 </div>
               </div>
             </div>
@@ -81,34 +96,92 @@ const Login = () => {
           {/* Right Side - Form Section */}
           <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-12">
             {/* Mobile Header */}
-            <div className="lg:hidden text-center mb-8">
-              <div className={`mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-4 ${
+            <div className="lg:hidden text-center mb-6">
+              <div className={`mx-auto w-14 h-14 rounded-2xl flex items-center justify-center mb-3 ${
                 isDark ? 'bg-gradient-to-br from-gray-700 to-gray-800' : 'bg-gradient-to-br from-gray-200 to-gray-300'
               }`}>
-                <LogIn className={`h-8 w-8 ${isDark ? 'text-gray-300' : 'text-gray-700'}`} />
+                <User className={`h-7 w-7 ${isDark ? 'text-gray-300' : 'text-gray-700'}`} />
               </div>
-              <h2 className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                Welcome Back
+              <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Create Account
               </h2>
-              <p className={`mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Sign in to your account
+              <p className={`mt-1 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                Register for inventory system
               </p>
             </div>
 
             {/* Desktop Header */}
-            <div className="hidden lg:block mb-8">
+            <div className="hidden lg:block mb-6">
               <h2 className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                Sign In
+                Create Account
               </h2>
               <p className={`mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Enter your credentials to continue
+                Fill in your details to get started
               </p>
             </div>
 
-            <div className="space-y-5">
+            <div className="space-y-4">
+              {/* Avatar Upload */}
+              <div className="flex items-center gap-4">
+                <div className={`w-16 h-16 rounded-full overflow-hidden border-2 flex-shrink-0 ${
+                  isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-gray-100'
+                }`}>
+                  {avatarPreview ? (
+                    <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <User className={`h-8 w-8 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
+                    </div>
+                  )}
+                </div>
+                <Label
+                  htmlFor="avatar"
+                  className={`cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm ${
+                    isDark 
+                      ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' 
+                      : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                  }`}
+                >
+                  <Upload className="h-4 w-4" />
+                  Upload Avatar
+                </Label>
+                <input
+                  id="avatar"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                />
+              </div>
+
+              {/* Full Name */}
+              <div className="space-y-2">
+                <Label htmlFor="fullName" className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Full Name
+                </Label>
+                <div className="relative">
+                  <User className={`absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 ${
+                    isDark ? 'text-gray-500' : 'text-gray-400'
+                  }`} />
+                  <Input
+                    id="fullName"
+                    type="text"
+                    placeholder="John Doe"
+                    value={formData.fullName}
+                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                    className={`pl-10 h-10 ${
+                      isDark 
+                        ? 'bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-gray-600' 
+                        : 'bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-gray-400'
+                    }`}
+                    required
+                  />
+                </div>
+              </div>
+
               {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email" className={isDark ? 'text-gray-300' : 'text-gray-700'}>
+                <Label htmlFor="email" className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                   Email
                 </Label>
                 <div className="relative">
@@ -121,7 +194,7 @@ const Login = () => {
                     placeholder="john@example.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className={`pl-10 h-11 ${
+                    className={`pl-10 h-10 ${
                       isDark 
                         ? 'bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-gray-600' 
                         : 'bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-gray-400'
@@ -133,19 +206,9 @@ const Login = () => {
 
               {/* Password */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className={isDark ? 'text-gray-300' : 'text-gray-700'}>
-                    Password
-                  </Label>
-                  <a 
-                    href="/forgot-password" 
-                    className={`text-sm font-medium ${
-                      isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-900'
-                    } transition-colors`}
-                  >
-                    Forgot?
-                  </a>
-                </div>
+                <Label htmlFor="password" className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Password
+                </Label>
                 <div className="relative">
                   <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 ${
                     isDark ? 'text-gray-500' : 'text-gray-400'
@@ -156,7 +219,7 @@ const Login = () => {
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className={`pl-10 pr-10 h-11 ${
+                    className={`pl-10 pr-10 h-10 ${
                       isDark 
                         ? 'bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-gray-600' 
                         : 'bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-gray-400'
@@ -178,47 +241,23 @@ const Login = () => {
               {/* Submit Button */}
               <Button
                 onClick={handleSubmit}
-                className={`w-full h-11 mt-6 font-semibold transition-all ${
+                className={`w-full h-10 mt-4 font-semibold transition-all ${
                   isDark 
                     ? 'bg-gray-800 hover:bg-gray-700 text-white shadow-lg shadow-gray-900/50' 
                     : 'bg-gray-900 hover:bg-gray-800 text-white shadow-lg shadow-gray-400/30'
                 }`}
               >
-                Sign In
-              </Button>
-
-              {/* Divider */}
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <span className={`w-full border-t ${
-                    isDark ? 'border-gray-800' : 'border-gray-300'
-                  }`} />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className={`px-2 ${
-                    isDark ? 'bg-gray-900/50 text-gray-500' : 'bg-white/80 text-gray-500'
-                  }`}>
-                    New to the system?
-                  </span>
-                </div>
-              </div>
-
-              {/* Register Link */}
-              <Button
-                onClick={() => window.location.href = '/register'}
-                variant="outline"
-                className={`w-full h-11 font-semibold transition-all ${
-                  isDark 
-                    ? 'border-gray-700 bg-transparent hover:bg-gray-800 text-gray-300 hover:text-white' 
-                    : 'border-gray-300 bg-transparent hover:bg-gray-100 text-gray-700 hover:text-gray-900'
-                }`}
-              >
                 Create Account
               </Button>
 
-              {/* Footer Text */}
-              <p className={`text-center text-xs mt-6 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
-                By signing in, you agree to our Terms of Service
+              {/* Login Link */}
+              <p className={`text-center text-sm pt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                Already have an account?{' '}
+                <a href="/login" className={`font-medium ${
+                  isDark ? 'text-gray-300 hover:text-white' : 'text-gray-900 hover:text-black'
+                } transition-colors`}>
+                  Sign in
+                </a>
               </p>
             </div>
           </div>
@@ -228,4 +267,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;
