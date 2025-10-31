@@ -70,7 +70,11 @@ export const registerUser = async (req, res, next) => {
       throw new Error("something went wrong while creating user");
     }
 
-    return res.status(201).json(createdUser);
+    return res.status(201).json({
+      success: true,
+      user: createdUser,
+      message: "user created successfully",
+    });
   } catch (error) {
     throw new Error(error.message);
   }
@@ -109,7 +113,7 @@ export const loginUser = async (req, res, next) => {
     return res
       .status(200)
       .cookie("accessToken", accessToken, options)
-      .json(user);
+      .json({ success: true, user, message: "user logged in successfully" });
   } catch (error) {
     throw new Error(error.message);
   }
@@ -123,17 +127,22 @@ export const logoutUser = async (req, res, next) => {
       sameSite: "lax",
     };
 
-    return res
-      .status(200)
-      .cookie("accessToken", options)
-      .json("user logged out successfully");
+    return res.status(200).cookie("accessToken", options).json({
+      success: true,
+      data: {},
+      message: "user logged out successfully",
+    });
   } catch (error) {
     throw new Error(error.message);
   }
 };
 
 export const currentUser = async (req, res, next) => {
-  return res.status(200).json(req.user, "user fetched successfully");
+  return res.status(200).json({
+    success: true,
+    user: req.user,
+    message: "user fetched successfully",
+  });
 };
 
 export const updateUserAvatar = async (req, res, next) => {
@@ -163,5 +172,11 @@ export const updateUserAvatar = async (req, res, next) => {
     throw new Error("something went wrong while updating avatar");
   }
 
-  return res.status(200).json({ user: updatedUser });
+  return res
+    .status(200)
+    .json({
+      success: true,
+      user: updatedUser,
+      message: "user avatar updated successfully",
+    });
 };
