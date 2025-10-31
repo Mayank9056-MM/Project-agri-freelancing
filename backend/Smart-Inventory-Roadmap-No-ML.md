@@ -328,3 +328,45 @@ smart-inventory-billing/
 └── .env
 
 ```
+
+## How to start server 
+
+If MongoDB is already running (as standalone):
+```bash
+sudo systemctl stop mongod
+```
+
+```bash
+pkill mongod
+```
+
+If MoRemove the old socket file (if exist):
+```bash
+sudo rm -f /tmp/mongodb-27017.sock
+```
+
+Ensure MongoDB data folder permissions are correct
+
+MongoDB stores its data in /data/db by default.
+Make sure this folder exists and is writable by your user.
+```bash
+sudo mkdir -p /data/db
+sudo chown -R $(whoami) /data/db
+```
+
+Start MongoDB again as replica set:
+```
+mongod --replSet rs0 --bind_ip localhost
+```
+
+Initialize replica set (in a new terminal):
+```
+mongosh
+
+rs.initiate({
+  _id: "rs0",
+  members: [{ _id: 0, host: "localhost:27017" }]
+});
+
+```
+

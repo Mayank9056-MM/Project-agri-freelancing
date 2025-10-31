@@ -11,9 +11,9 @@ const generateAccessToken = async (userId) => {
 
     const accessToken = user.generateAccessToken();
 
-    return accessToken ;
+    return accessToken;
   } catch (error) {
-    console.log(error)
+    console.log(error);
     throw new Error("Something went wrong while generating access token");
   }
 };
@@ -37,7 +37,6 @@ export const registerUser = async (req, res, next) => {
 
     const avatarLocalFilePath = req?.file.path;
 
-
     if (!avatarLocalFilePath) {
       throw new Error("avatar local file path not found");
     }
@@ -45,7 +44,7 @@ export const registerUser = async (req, res, next) => {
     let avatar;
 
     try {
-      console.log(avatarLocalFilePath,"avatarLocalFilePath")
+      console.log(avatarLocalFilePath, "avatarLocalFilePath");
 
       avatar = await uploadOnCloudinary(avatarLocalFilePath);
       if (!avatar) {
@@ -56,7 +55,7 @@ export const registerUser = async (req, res, next) => {
       throw new Error("something went wrong while uploading avatar", [error]);
     }
 
-    console.log(avatar,"avatar")
+    console.log(avatar, "avatar");
 
     const user = {
       fullName,
@@ -100,10 +99,11 @@ export const loginUser = async (req, res, next) => {
     }
 
     const accessToken = await generateAccessToken(user._id);
-    console.log(accessToken,"accessToken")
+    console.log(accessToken, "accessToken");
     const options = {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
+      sameSite: "lax",
     };
 
     return res
@@ -120,6 +120,7 @@ export const logoutUser = async (req, res, next) => {
     const options = {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
+      sameSite: "lax",
     };
 
     return res
