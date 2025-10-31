@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { AuthContext } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "@/context/ThemeContext";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -34,8 +35,8 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await login(formData);
-      console.log(res)
+      await login(formData);
+      toast.success("Login successful");   
       navigate("/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "Invalid credentials");

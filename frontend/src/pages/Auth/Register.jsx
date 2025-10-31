@@ -17,10 +17,11 @@ import { Card } from "@/components/ui/card";
 import { AuthContext } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "@/context/ThemeContext";
+import toast from "react-hot-toast";
 
 const Register = () => {
-    const { theme, toggleTheme } = useContext(ThemeContext);
-    const isDark = theme === "dark";
+  const { theme, toggleTheme } = useContext(ThemeContext);
+  const isDark = theme === "dark";
   const [showPassword, setShowPassword] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [formData, setFormData] = useState({
@@ -48,15 +49,15 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log(formData)
+      console.log(formData);
       await register(formData);
+      toast.success("Registration successful, Please Login");
       navigate("/login");
     } catch (err) {
       console.log(err);
       // setError(err.response?.data?.message || "Invalid credentials");
     }
   };
-
 
   return (
     <div
