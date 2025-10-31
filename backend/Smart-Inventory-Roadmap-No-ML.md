@@ -351,7 +351,7 @@ MongoDB stores its data in /data/db by default.
 Make sure this folder exists and is writable by your user.
 ```bash
 sudo mkdir -p /data/db
-sudo chown -R $(whoami) /data/db
+sudo chown -R $(whoami) /dta/dba
 ```
 
 Start MongoDB again as replica set:
