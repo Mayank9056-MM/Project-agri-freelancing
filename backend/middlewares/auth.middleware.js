@@ -16,7 +16,7 @@ export const verifyAuth = async (req, _, next) => {
       process.env.ACCESS_TOKEN_SECRET
     );
 
-    const user = await User.findById(decodedToken?._id);
+    const user = await User.findById(decodedToken?._id).select("-password");
 
     if (!user) {
       throw new Error("Unauthorized");

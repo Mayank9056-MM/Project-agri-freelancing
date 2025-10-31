@@ -12,25 +12,39 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // useEffect(() => {
-  //   if (
-  //     !user &&
-  //     window.location !== "/login" &&
-  //     window.location !== "/register"
-  //   ) {
-  //     getCurrentUserApi()
-  //       .then((res) => {
-  //         localStorage.setItem("user", res.user);
-  //         setUser(res.user);
-  //       })
-  //       .catch(() => setUser(null))
-  //       .finally(() => setLoading(false));
-  //   } else {
-  //     setLoading(false);
-  //   }
-  // }, []);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const savedUser = localStorage.getItem("user");
+
+        if (savedUser) {
+          setUser(JSON.parse(savedUser));
+        } else {
+          const res = await getCurrentUserApi();
+          const currentUser = res.user;
+          if (currentUser) {
+            setUser(currentUser);
+
+            localStorage.setItem("user", JSON.stringify(currentUser));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch current user:", err);
+        setUser(null);
+        localStorage.removeItem("user");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    console.log("Updated user:", user);
+  }, [user]);
 
   const login = async (credentials) => {
     const res = await loginApi(credentials);
@@ -42,9 +56,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (credentials) => {
-    console.log(credentials)
+    console.log(credentials);
     const res = await registerApi(credentials);
-    console.log(res)
+    console.log(res);
     const userData = res.data;
 
     return userData;

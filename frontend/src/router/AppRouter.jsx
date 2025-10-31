@@ -5,13 +5,28 @@ import { protectedRoutes } from "./routeConfig.jsx";
 import ProtectedRoute from "@/components/layout/ProtectedRoutes";
 import Register from "@/pages/Auth/Register";
 import Login from "@/pages/Auth/Login";
+import PublicRoute from "@/components/layout/PublicRoute.jsx";
 
 export default function AppRouter() {
   return (
     <Routes>
-      {/* 🟢 Public routes */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+     {/* 🟢 Public routes (only if not logged in) */}
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <PublicRoute>
+            <Register />
+          </PublicRoute>
+        }
+      />
 
       {/* 🔒 Protected routes */}
       <Route
