@@ -328,3 +328,102 @@ smart-inventory-billing/
 └── .env
 
 ```
+
+```
+frontend/
+├── public/
+│   ├── logo.svg
+│   ├── favicon.ico
+│   └── manifest.json
+│
+├── src/
+│   ├── assets/                    # Static files (images, icons, CSV samples)
+│   │   ├── logo.png
+│   │   ├── barcode-demo.svg
+│   │   └── sample-products.csv
+│   │
+│   ├── components/                # Reusable UI components
+│   │   ├── layout/
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── Sidebar.jsx
+│   │   │   ├── Layout.jsx         # Wraps sidebar + navbar + children
+│   │   │   └── ProtectedRoute.jsx # Auth check wrapper
+│   │   │
+│   │   ├── ui/
+│   │   │   ├── Button.jsx
+│   │   │   ├── Card.jsx
+│   │   │   ├── Input.jsx
+│   │   │   ├── Modal.jsx
+│   │   │   └── Table.jsx
+│   │   │
+│   │   ├── POS/
+│   │   │   ├── BarcodeScanner.jsx # Uses html5-qrcode or quagga
+│   │   │   ├── CartItem.jsx
+│   │   │   └── PaymentQRModal.jsx
+│   │   │
+│   │   └── Reports/
+│   │       ├── SalesChart.jsx
+│   │       └── TopProductsTable.jsx
+│   │
+│   ├── pages/
+│   │   ├── Auth/
+│   │   │   ├── Login.jsx
+│   │   │   └── Signup.jsx
+│   │   │
+│   │   ├── Dashboard/
+│   │   │   ├── Dashboard.jsx      # Main admin home (KPIs, charts)
+│   │   │   └── LowStockList.jsx
+│   │   │
+│   │   ├── Products/
+│   │   │   ├── ProductsList.jsx
+│   │   │   ├── ProductForm.jsx
+│   │   │   └── ProductDetail.jsx
+│   │   │
+│   │   ├── POS/
+│   │   │   ├── POSPage.jsx
+│   │   │   └── ReceiptPage.jsx
+│   │   │
+│   │   ├── Sales/
+│   │   │   ├── SalesReport.jsx
+│   │   │   └── SaleDetail.jsx
+│   │   │
+│   │   └── Settings/
+│   │       ├── SettingsPage.jsx
+│   │       └── UserManagement.jsx
+│   │
+│   ├── context/
+│   │   ├── AuthContext.jsx
+│   │   ├── CartContext.jsx
+│   │   └── ProductContext.jsx
+│   │
+│   ├── services/
+│   │   ├── api.js                 # axios instance
+│   │   ├── authService.js
+│   │   ├── productService.js
+│   │   ├── saleService.js
+│   │   ├── reportService.js
+│   │   └── uploadService.js       # CSV uploads
+│   │
+│   ├── hooks/
+│   │   ├── useAuth.js
+│   │   ├── useFetch.js
+│   │   └── useCart.js
+│   │
+│   ├── router/
+│   │   ├── AppRouter.jsx          # All routes with roles (admin/cashier)
+│   │   └── routesConfig.js
+│   │
+│   ├── styles/
+│   │   ├── globals.css
+│   │   └── tailwind.css
+│   │
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── vite.config.js
+│
+├── .env
+├── package.json
+└── tailwind.config.js
+
+
+```
