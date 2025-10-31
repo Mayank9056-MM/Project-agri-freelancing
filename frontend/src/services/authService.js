@@ -3,9 +3,9 @@ import api from "./api";
 export const loginApi = async (credentials) => {
   try {
     console.log(credentials);
-    const res = api.post("user/login", credentials);
+    const res = await api.post("user/login", credentials);
     console.log(res);
-    return res.data;
+    return res;
   } catch (error) {
     console.log(error);
   }
@@ -14,7 +14,7 @@ export const loginApi = async (credentials) => {
 export const registerApi = async (userData) => {
   try {
     const res = await api.post("user/register", userData, {
-      headers: { "Content-Type": "multipart/from-data" },
+      headers: { "Content-Type": "multipart/form-data" },
     });
 
     return res.data;

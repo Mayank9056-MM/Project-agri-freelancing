@@ -1,4 +1,9 @@
-import { getCurrentUserApi, loginApi, logoutApi } from "@/services/authService";
+import {
+  getCurrentUserApi,
+  loginApi,
+  logoutApi,
+  registerApi,
+} from "@/services/authService";
 import { createContext, useState, useEffect } from "react";
 // import { getCurrentUser } from "@/services/authService";
 
@@ -29,9 +34,18 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     const res = await loginApi(credentials);
-    const userData = res.data.user;
+    const userData = res.data;
 
     setUser(userData);
+
+    return userData;
+  };
+
+  const register = async (credentials) => {
+    console.log(credentials)
+    const res = await registerApi(credentials);
+    console.log(res)
+    const userData = res.data;
 
     return userData;
   };
@@ -52,6 +66,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     loading,
     isAuthenticated: !!user,
+    register,
   };
 
   return (
