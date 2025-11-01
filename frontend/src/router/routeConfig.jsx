@@ -1,5 +1,7 @@
 import Dashboard from "@/pages/Dashboard/Dashboard";
 import POSPage from "@/pages/POS/POSPage";
+import ProductDetail from "@/pages/Products/ProductDetail";
+import ProductForm from "@/pages/Products/ProductForm";
 import ProductsList from "@/pages/Products/ProductsList";
 import SalesReport from "@/pages/Sales/SalesReport";
 import SettingsPage from "@/pages/Settings/SettingsPage";
@@ -25,6 +27,18 @@ export const protectedRoutes = [
     element: <ProductsList />,
     title: "Products",
     roles: ["admin"],
+  },
+  {
+   path: "/products/add",
+   element: <ProductForm />,
+   title: "Add Product",
+   roles: ["admin"],
+  },
+  {
+    path: "/products/details",
+    element: <ProductDetail />,
+    title: "Product Details",
+    roles: ["admin"]
   },
   {
     path: "/pos",
