@@ -28,7 +28,7 @@ const Layout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userRole] = useState("admin");
   const { theme, toggleTheme } = useContext(ThemeContext);
-  const { logout } = useContext(AuthContext);
+  const { logout, user } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -47,7 +47,7 @@ const Layout = () => {
 
   const NavItem = ({ icon: Icon, label, path, badge }) => {
     const isActive = location.pathname === path;
-    
+
     return (
       <div>
         <button
@@ -190,7 +190,11 @@ const Layout = () => {
                       : "from-gray-200 to-gray-300"
                   }`}
                 >
-                  <Users className="h-5 w-5" />
+                  {user?.avatar ? (
+                    <img src={user.avatar} />
+                  ) : (
+                    <Users className="h-5 w-5" />
+                  )}
                 </div>
                 <div>
                   <span
@@ -198,7 +202,7 @@ const Layout = () => {
                       isDark ? "text-gray-200" : "text-gray-800"
                     }`}
                   >
-                    {userRole === "admin" ? "Admin" : "Cashier"}
+                    {user.role === "admin" ? "Admin" : "Cashier"}
                   </span>
                   <span
                     className={`text-xs flex items-center gap-1 ${
@@ -311,10 +315,22 @@ const Layout = () => {
             >
               <div className="p-4 space-y-2">
                 <NavItem icon={BarChart3} label="Dashboard" path="/dashboard" />
-                <NavItem icon={ShoppingCart} label="POS / Billing" path="/pos" />
+                <NavItem
+                  icon={ShoppingCart}
+                  label="POS / Billing"
+                  path="/pos"
+                />
                 <NavItem icon={Package} label="Products" path="/products" />
-                <NavItem icon={Upload} label="Bulk Upload" path="/bulk-upload" />
-                <NavItem icon={FileText} label="Sales Reports" path="/reports" />
+                <NavItem
+                  icon={Upload}
+                  label="Bulk Upload"
+                  path="/bulk-upload"
+                />
+                <NavItem
+                  icon={FileText}
+                  label="Sales Reports"
+                  path="/reports"
+                />
                 <NavItem
                   icon={AlertCircle}
                   label="Low Stock"

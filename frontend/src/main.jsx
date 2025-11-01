@@ -7,16 +7,18 @@ import { AuthProvider } from "./context/AuthContext";
 import { ThemeContext, ThemeProvider } from "./context/ThemeContext";
 import { Toaster } from "react-hot-toast";
 import CustomToaster from "./components/customToaster";
-
+import { ProductProvider } from "./context/ProductContext";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <ThemeProvider>
-        <AuthProvider>
-          <App />
-    <CustomToaster />
-        </AuthProvider>
+        <ProductProvider>
+          <AuthProvider>
+            <App />
+            <CustomToaster />
+          </AuthProvider>
+        </ProductProvider>
       </ThemeProvider>
     </BrowserRouter>
   </StrictMode>

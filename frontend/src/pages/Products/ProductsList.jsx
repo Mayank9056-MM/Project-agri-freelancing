@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   Package,
   Search,
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/card";
 import { ThemeContext } from "@/context/ThemeContext";
 import { Navigate, useNavigate } from "react-router-dom";
+import { ProductContext } from "@/context/ProductContext";
 
 const ProductList = ({ onEdit, onDelete, onView }) => {
   const { theme } = useContext(ThemeContext);
@@ -32,105 +33,120 @@ const ProductList = ({ onEdit, onDelete, onView }) => {
   const [stockFilter, setStockFilter] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
   const navigate = useNavigate();
+  const { getAllProducts, products, setProducts } = useContext(ProductContext);
 
-  const [products] = useState([
-    {
-      id: 1,
-      name: "Laptop",
-      sku: "LAP-001",
-      category: "Electronics",
-      price: 1299,
-      stock: 45,
-      sold: 156,
-      reorderLevel: 20,
-      status: "in-stock",
-      image: "💻",
-    },
-    {
-      id: 2,
-      name: "Smartphone",
-      sku: "PHN-001",
-      category: "Electronics",
-      price: 599,
-      stock: 78,
-      sold: 234,
-      reorderLevel: 30,
-      status: "in-stock",
-      image: "📱",
-    },
-    {
-      id: 3,
-      name: "Headphones",
-      sku: "AUD-001",
-      category: "Audio",
-      price: 199,
-      stock: 124,
-      sold: 387,
-      reorderLevel: 50,
-      status: "in-stock",
-      image: "🎧",
-    },
-    {
-      id: 4,
-      name: "Wireless Mouse",
-      sku: "ACC-001",
-      category: "Accessories",
-      price: 29,
-      stock: 18,
-      sold: 445,
-      reorderLevel: 40,
-      status: "low-stock",
-      image: "🖱️",
-    },
-    {
-      id: 5,
-      name: "Mechanical Keyboard",
-      sku: "ACC-002",
-      category: "Accessories",
-      price: 75,
-      stock: 98,
-      sold: 289,
-      reorderLevel: 30,
-      status: "in-stock",
-      image: "⌨️",
-    },
-    {
-      id: 6,
-      name: "USB-C Cable",
-      sku: "CBL-001",
-      category: "Cables",
-      price: 15,
-      stock: 8,
-      sold: 678,
-      reorderLevel: 100,
-      status: "low-stock",
-      image: "🔌",
-    },
-    {
-      id: 7,
-      name: "Webcam",
-      sku: "CAM-001",
-      category: "Electronics",
-      price: 89,
-      stock: 0,
-      sold: 156,
-      reorderLevel: 25,
-      status: "out-of-stock",
-      image: "📷",
-    },
-    {
-      id: 8,
-      name: "Monitor Stand",
-      sku: "ACC-003",
-      category: "Accessories",
-      price: 45,
-      stock: 67,
-      sold: 123,
-      reorderLevel: 20,
-      status: "in-stock",
-      image: "🖥️",
-    },
-  ]);
+  useEffect(() => {
+    async function getAllProductDetails() {
+      try {
+        const res = await getAllProducts();
+        console.log(res);
+        // setProducts(res)
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    getAllProductDetails();
+  }, []);
+
+  // const [products] = useState([
+  //   {
+  //     id: 1,
+  //     name: "Laptop",
+  //     sku: "LAP-001",
+  //     category: "Electronics",
+  //     price: 1299,
+  //     stock: 45,
+  //     sold: 156,
+  //     reorderLevel: 20,
+  //     status: "in-stock",
+  //     image: "💻",
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Smartphone",
+  //     sku: "PHN-001",
+  //     category: "Electronics",
+  //     price: 599,
+  //     stock: 78,
+  //     sold: 234,
+  //     reorderLevel: 30,
+  //     status: "in-stock",
+  //     image: "📱",
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Headphones",
+  //     sku: "AUD-001",
+  //     category: "Audio",
+  //     price: 199,
+  //     stock: 124,
+  //     sold: 387,
+  //     reorderLevel: 50,
+  //     status: "in-stock",
+  //     image: "🎧",
+  //   },
+  //   {
+  //     id: 4,
+  //     name: "Wireless Mouse",
+  //     sku: "ACC-001",
+  //     category: "Accessories",
+  //     price: 29,
+  //     stock: 18,
+  //     sold: 445,
+  //     reorderLevel: 40,
+  //     status: "low-stock",
+  //     image: "🖱️",
+  //   },
+  //   {
+  //     id: 5,
+  //     name: "Mechanical Keyboard",
+  //     sku: "ACC-002",
+  //     category: "Accessories",
+  //     price: 75,
+  //     stock: 98,
+  //     sold: 289,
+  //     reorderLevel: 30,
+  //     status: "in-stock",
+  //     image: "⌨️",
+  //   },
+  //   {
+  //     id: 6,
+  //     name: "USB-C Cable",
+  //     sku: "CBL-001",
+  //     category: "Cables",
+  //     price: 15,
+  //     stock: 8,
+  //     sold: 678,
+  //     reorderLevel: 100,
+  //     status: "low-stock",
+  //     image: "🔌",
+  //   },
+  //   {
+  //     id: 7,
+  //     name: "Webcam",
+  //     sku: "CAM-001",
+  //     category: "Electronics",
+  //     price: 89,
+  //     stock: 0,
+  //     sold: 156,
+  //     reorderLevel: 25,
+  //     status: "out-of-stock",
+  //     image: "📷",
+  //   },
+  //   {
+  //     id: 8,
+  //     name: "Monitor Stand",
+  //     sku: "ACC-003",
+  //     category: "Accessories",
+  //     price: 45,
+  //     stock: 67,
+  //     sold: 123,
+  //     reorderLevel: 20,
+  //     status: "in-stock",
+  //     image: "🖥️",
+  //   },
+  // ]);
 
   const categories = ["all", "Electronics", "Audio", "Accessories", "Cables"];
 

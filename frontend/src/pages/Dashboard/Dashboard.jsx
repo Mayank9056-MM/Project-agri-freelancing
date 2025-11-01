@@ -30,10 +30,12 @@ import {
   Cell,
 } from "recharts";
 import { ThemeContext } from "@/context/ThemeContext";
+import { AuthContext } from "@/context/AuthContext";
 
 const Dashboard = () => {
   const { theme } = useContext(ThemeContext);
   const isDark = theme === "dark";
+  const {user} = useContext(AuthContext)
 
   const salesData = [
     { date: "01 Nov", revenue: 4200, orders: 28, items: 156 },
