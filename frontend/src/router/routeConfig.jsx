@@ -35,7 +35,7 @@ export const protectedRoutes = [
    roles: ["admin"],
   },
   {
-    path: "/products/details",
+    path: "/products/:id",
     element: <ProductDetail />,
     title: "Product Details",
     roles: ["admin"]

@@ -330,6 +330,7 @@ const ProductList = ({ onEdit, onDelete, onView }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredProducts.map((product) => (
           <Card
+            onClick={() => navigate(`/products/${product.id}`)}
             key={product.id}
             className={`border-0 overflow-hidden group hover:scale-105 transition-all duration-300 cursor-pointer ${
               isDark
