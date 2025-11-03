@@ -329,7 +329,7 @@ const Layout = () => {
                 <NavItem
                   icon={FileText}
                   label="Sales Reports"
-                  path="/reports"
+                  path="/sales"
                 />
                 <NavItem
                   icon={AlertCircle}
