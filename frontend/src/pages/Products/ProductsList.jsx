@@ -150,7 +150,7 @@ const ProductList = ({ onEdit, onDelete, onView }) => {
 
   const categories = ["all", "Electronics", "Audio", "Accessories", "Cables"];
 
-  const filteredProducts = products.filter((product) => {
+  const filteredProducts = products?.filter((product) => {
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.sku.toLowerCase().includes(searchTerm.toLowerCase());
@@ -207,7 +207,7 @@ const ProductList = ({ onEdit, onDelete, onView }) => {
             }`}
           >
             <Package className="h-4 w-4" />
-            {filteredProducts.length} products in inventory
+            {filteredProducts?.length} products in inventory
           </p>
         </div>
         <Button
@@ -344,7 +344,7 @@ const ProductList = ({ onEdit, onDelete, onView }) => {
 
       {/* Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {filteredProducts.map((product) => (
+        {filteredProducts?.map((product) => (
           <Card
             onClick={() => navigate(`/products/${product.id}`)}
             key={product.id}
@@ -482,7 +482,7 @@ const ProductList = ({ onEdit, onDelete, onView }) => {
         ))}
       </div>
 
-      {filteredProducts.length === 0 && (
+      {filteredProducts?.length === 0 && (
         <Card
           className={`border-0 ${
             isDark

@@ -1,3 +1,4 @@
+
 import React, { useState, useContext, useEffect } from "react";
 import {
   Package,
@@ -27,9 +28,9 @@ const ProductForm = ({ product, onSave }) => {
   const { theme } = useContext(ThemeContext);
   const isDark = theme === "dark";
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const onCancel = () => navigate("/products")
+  const onCancel = () => navigate("/products");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -58,7 +59,7 @@ const ProductForm = ({ product, onSave }) => {
         description: product.description || "",
       });
     }
-  }, [product]);
+  }, []);
 
   const categories = [
     "Electronics",
@@ -72,8 +73,22 @@ const ProductForm = ({ product, onSave }) => {
   ];
 
   const emojiOptions = [
-    "💻", "📱", "🎧", "🖱️", "⌨️", "🔌", "📷", "🖥️",
-    "⚡", "🔋", "💾", "🖨️", "📡", "🎮", "⌚", "🎵",
+    "💻",
+    "📱",
+    "🎧",
+    "🖱️",
+    "⌨️",
+    "🔌",
+    "📷",
+    "🖥️",
+    "⚡",
+    "🔋",
+    "💾",
+    "🖨️",
+    "📡",
+    "🎮",
+    "⌚",
+    "🎵",
   ];
 
   const validateField = (name, value) => {
@@ -104,7 +119,7 @@ const ProductForm = ({ product, onSave }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
+
     if (touched[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -127,7 +142,11 @@ const ProductForm = ({ product, onSave }) => {
 
     const newErrors = {};
     Object.keys(formData).forEach((key) => {
-      if (["name", "sku", "category", "price", "stock", "reorderLevel"].includes(key)) {
+      if (
+        ["name", "sku", "category", "price", "stock", "reorderLevel"].includes(
+          key
+        )
+      ) {
         const error = validateField(key, formData[key]);
         if (error) newErrors[key] = error;
       }
@@ -148,7 +167,7 @@ const ProductForm = ({ product, onSave }) => {
 
     const stockValue = parseInt(formData.stock);
     const reorderValue = parseInt(formData.reorderLevel);
-    
+
     let status = "in-stock";
     if (stockValue === 0) {
       status = "out-of-stock";
@@ -165,27 +184,6 @@ const ProductForm = ({ product, onSave }) => {
       status,
     });
   };
-
-  const InputWrapper = ({ children, label, error, icon: Icon, required }) => (
-    <div>
-      <label
-        className={`block text-xs sm:text-sm font-semibold mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2 ${
-          isDark ? "text-gray-300" : "text-gray-700"
-        }`}
-      >
-        {Icon && <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />}
-        <span className="truncate">{label}</span>
-        {required && <span className="text-rose-500 flex-shrink-0">*</span>}
-      </label>
-      {children}
-      {error && (
-        <div className="flex items-start gap-1 mt-1.5 text-rose-500 text-xs sm:text-sm">
-          <AlertCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0 mt-0.5" />
-          <span className="leading-tight">{error}</span>
-        </div>
-      )}
-    </div>
-  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
@@ -211,7 +209,9 @@ const ProductForm = ({ product, onSave }) => {
                 } bg-clip-text text-transparent`}
               >
                 <Package className="h-5 w-5 sm:h-6 sm:w-6 text-violet-500 flex-shrink-0" />
-                <span className="truncate">{product ? "Edit Product" : "Add New Product"}</span>
+                <span className="truncate">
+                  {product ? "Edit Product" : "Add New Product"}
+                </span>
               </CardTitle>
               <CardDescription className="mt-1 text-xs sm:text-sm">
                 {product
@@ -246,12 +246,17 @@ const ProductForm = ({ product, onSave }) => {
                   <span>Basic Information</span>
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <InputWrapper
-                    label="Product Name"
-                    error={touched.name && errors.name}
-                    icon={Package}
-                    required
-                  >
+                  {/* Product Name */}
+                  <div>
+                    <label
+                      className={`block text-xs sm:text-sm font-semibold mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2 ${
+                        isDark ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      <Package className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="truncate">Product Name</span>
+                      <span className="text-rose-500 flex-shrink-0">*</span>
+                    </label>
                     <input
                       type="text"
                       name="name"
@@ -267,14 +272,25 @@ const ProductForm = ({ product, onSave }) => {
                           : "bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-violet-400 focus:ring-violet-400/20"
                       }`}
                     />
-                  </InputWrapper>
+                    {touched.name && errors.name && (
+                      <div className="flex items-start gap-1 mt-1.5 text-rose-500 text-xs sm:text-sm">
+                        <AlertCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0 mt-0.5" />
+                        <span className="leading-tight">{errors.name}</span>
+                      </div>
+                    )}
+                  </div>
 
-                  <InputWrapper
-                    label="SKU"
-                    error={touched.sku && errors.sku}
-                    icon={Hash}
-                    required
-                  >
+                  {/* SKU */}
+                  <div>
+                    <label
+                      className={`block text-xs sm:text-sm font-semibold mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2 ${
+                        isDark ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      <Hash className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="truncate">SKU</span>
+                      <span className="text-rose-500 flex-shrink-0">*</span>
+                    </label>
                     <input
                       type="text"
                       name="sku"
@@ -290,14 +306,25 @@ const ProductForm = ({ product, onSave }) => {
                           : "bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-violet-400 focus:ring-violet-400/20"
                       }`}
                     />
-                  </InputWrapper>
+                    {touched.sku && errors.sku && (
+                      <div className="flex items-start gap-1 mt-1.5 text-rose-500 text-xs sm:text-sm">
+                        <AlertCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0 mt-0.5" />
+                        <span className="leading-tight">{errors.sku}</span>
+                      </div>
+                    )}
+                  </div>
 
-                  <InputWrapper
-                    label="Category"
-                    error={touched.category && errors.category}
-                    icon={Tag}
-                    required
-                  >
+                  {/* Category */}
+                  <div>
+                    <label
+                      className={`block text-xs sm:text-sm font-semibold mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2 ${
+                        isDark ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      <Tag className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="truncate">Category</span>
+                      <span className="text-rose-500 flex-shrink-0">*</span>
+                    </label>
                     <select
                       name="category"
                       value={formData.category}
@@ -318,13 +345,31 @@ const ProductForm = ({ product, onSave }) => {
                         </option>
                       ))}
                     </select>
-                  </InputWrapper>
+                    {touched.category && errors.category && (
+                      <div className="flex items-start gap-1 mt-1.5 text-rose-500 text-xs sm:text-sm">
+                        <AlertCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0 mt-0.5" />
+                        <span className="leading-tight">{errors.category}</span>
+                      </div>
+                    )}
+                  </div>
 
-                  <InputWrapper
-                    label="Product Icon"
-                    icon={Smile}
-                  >
-                    <div className={`grid grid-cols-8 gap-1 sm:gap-2 p-2 rounded-lg sm:rounded-xl border-2 ${isDark ? "bg-gray-800/50 border-gray-700" : "bg-gray-50 border-gray-200"}`}>
+                  {/* Product Icon */}
+                  <div>
+                    <label
+                      className={`block text-xs sm:text-sm font-semibold mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2 ${
+                        isDark ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      <Smile className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="truncate">Product Icon</span>
+                    </label>
+                    <div
+                      className={`grid grid-cols-8 gap-1 sm:gap-2 p-2 rounded-lg sm:rounded-xl border-2 ${
+                        isDark
+                          ? "bg-gray-800/50 border-gray-700"
+                          : "bg-gray-50 border-gray-200"
+                      }`}
+                    >
                       {emojiOptions.map((emoji) => (
                         <button
                           key={emoji}
@@ -344,7 +389,7 @@ const ProductForm = ({ product, onSave }) => {
                         </button>
                       ))}
                     </div>
-                  </InputWrapper>
+                  </div>
                 </div>
               </div>
 
@@ -359,12 +404,17 @@ const ProductForm = ({ product, onSave }) => {
                   <span>Pricing & Inventory</span>
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                  <InputWrapper
-                    label="Price ($)"
-                    error={touched.price && errors.price}
-                    icon={DollarSign}
-                    required
-                  >
+                  {/* Price */}
+                  <div>
+                    <label
+                      className={`block text-xs sm:text-sm font-semibold mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2 ${
+                        isDark ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      <DollarSign className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="truncate">Price ($)</span>
+                      <span className="text-rose-500 flex-shrink-0">*</span>
+                    </label>
                     <input
                       type="number"
                       name="price"
@@ -382,14 +432,25 @@ const ProductForm = ({ product, onSave }) => {
                           : "bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-violet-400 focus:ring-violet-400/20"
                       }`}
                     />
-                  </InputWrapper>
+                    {touched.price && errors.price && (
+                      <div className="flex items-start gap-1 mt-1.5 text-rose-500 text-xs sm:text-sm">
+                        <AlertCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0 mt-0.5" />
+                        <span className="leading-tight">{errors.price}</span>
+                      </div>
+                    )}
+                  </div>
 
-                  <InputWrapper
-                    label="Stock Quantity"
-                    error={touched.stock && errors.stock}
-                    icon={Box}
-                    required
-                  >
+                  {/* Stock */}
+                  <div>
+                    <label
+                      className={`block text-xs sm:text-sm font-semibold mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2 ${
+                        isDark ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      <Box className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="truncate">Stock Quantity</span>
+                      <span className="text-rose-500 flex-shrink-0">*</span>
+                    </label>
                     <input
                       type="number"
                       name="stock"
@@ -406,14 +467,25 @@ const ProductForm = ({ product, onSave }) => {
                           : "bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-violet-400 focus:ring-violet-400/20"
                       }`}
                     />
-                  </InputWrapper>
+                    {touched.stock && errors.stock && (
+                      <div className="flex items-start gap-1 mt-1.5 text-rose-500 text-xs sm:text-sm">
+                        <AlertCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0 mt-0.5" />
+                        <span className="leading-tight">{errors.stock}</span>
+                      </div>
+                    )}
+                  </div>
 
-                  <InputWrapper
-                    label="Reorder Level"
-                    error={touched.reorderLevel && errors.reorderLevel}
-                    icon={TrendingUp}
-                    required
-                  >
+                  {/* Reorder Level */}
+                  <div>
+                    <label
+                      className={`block text-xs sm:text-sm font-semibold mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2 ${
+                        isDark ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="truncate">Reorder Level</span>
+                      <span className="text-rose-500 flex-shrink-0">*</span>
+                    </label>
                     <input
                       type="number"
                       name="reorderLevel"
@@ -430,12 +502,27 @@ const ProductForm = ({ product, onSave }) => {
                           : "bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-violet-400 focus:ring-violet-400/20"
                       }`}
                     />
-                  </InputWrapper>
+                    {touched.reorderLevel && errors.reorderLevel && (
+                      <div className="flex items-start gap-1 mt-1.5 text-rose-500 text-xs sm:text-sm">
+                        <AlertCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0 mt-0.5" />
+                        <span className="leading-tight">
+                          {errors.reorderLevel}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
               {/* Description */}
-              <InputWrapper label="Description (Optional)">
+              <div>
+                <label
+                  className={`block text-xs sm:text-sm font-semibold mb-1.5 sm:mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}
+                >
+                  Description (Optional)
+                </label>
                 <textarea
                   name="description"
                   value={formData.description}
@@ -448,7 +535,7 @@ const ProductForm = ({ product, onSave }) => {
                       : "bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-violet-400 focus:ring-violet-400/20"
                   }`}
                 />
-              </InputWrapper>
+              </div>
             </div>
           </CardContent>
 
