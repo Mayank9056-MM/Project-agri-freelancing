@@ -23,14 +23,17 @@ import {
 } from "@/components/ui/card";
 import { ThemeContext } from "@/context/ThemeContext";
 import { useNavigate } from "react-router-dom";
+import { ProductContext } from "@/context/ProductContext";
 
-const ProductForm = ({ product, onSave }) => {
+const ProductForm = ({ product }) => {
   const { theme } = useContext(ThemeContext);
   const isDark = theme === "dark";
 
   const navigate = useNavigate();
 
   const onCancel = () => navigate("/products");
+  const { getAllProducts, products, createProduct, setProducts } =
+    useContext(ProductContext);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -209,6 +212,14 @@ const ProductForm = ({ product, onSave }) => {
     }
 
     onSave(submitData);
+  };
+
+  const onSave = async (data) => {
+    try {
+      await createProduct(data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (

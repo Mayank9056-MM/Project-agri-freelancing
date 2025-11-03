@@ -1,6 +1,5 @@
 import api from "./api";
 
-
 /**
  * Creates a new product in the database.
  *
@@ -26,7 +25,7 @@ export const createProductApi = async (data) => {
 export const getAllProductApi = async () => {
   try {
     const res = await api.get("product/");
-    console.log(res)
+    console.log(res);
     return res.data;
   } catch (error) {
     console.log(error);
