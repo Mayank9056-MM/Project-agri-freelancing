@@ -10,7 +10,7 @@ import PublicRoute from "@/components/layout/PublicRoute.jsx";
 export default function AppRouter() {
   return (
     <Routes>
-     {/* 🟢 Public routes (only if not logged in) */}
+      {/* 🟢 Public routes (only if not logged in) */}
       <Route
         path="/login"
         element={

@@ -1,4 +1,5 @@
 import Dashboard from "@/pages/Dashboard/Dashboard";
+import LowStock from "@/pages/Dashboard/LowStockList";
 import POSPage from "@/pages/POS/POSPage";
 import BulkUpload from "@/pages/Products/BulkUpload";
 import ProductDetail from "@/pages/Products/ProductDetail";
@@ -7,7 +8,6 @@ import ProductsList from "@/pages/Products/ProductsList";
 import SalesReport from "@/pages/Sales/SalesReport";
 import SettingsPage from "@/pages/Settings/SettingsPage";
 import UserManagement from "@/pages/Settings/UserManagement";
-
 
 // 🟢 Public routes (no login required)
 export const publicRoutes = [
@@ -30,16 +30,16 @@ export const protectedRoutes = [
     roles: ["admin"],
   },
   {
-   path: "/products/add",
-   element: <ProductForm />,
-   title: "Add Product",
-   roles: ["admin"],
+    path: "/products/add",
+    element: <ProductForm />,
+    title: "Add Product",
+    roles: ["admin"],
   },
   {
     path: "/products/:id",
     element: <ProductDetail />,
     title: "Product Details",
-    roles: ["admin"]
+    roles: ["admin"],
   },
   {
     path: "/pos",
@@ -48,10 +48,16 @@ export const protectedRoutes = [
     roles: ["cashier", "admin"],
   },
   {
-   path: "/bulk-upload",
-   element: <BulkUpload />,
-   title: "Bulk Upload",
-   roles: ["admin"],
+    path: "/bulk-upload",
+    element: <BulkUpload />,
+    title: "Bulk Upload",
+    roles: ["admin"],
+  },
+  {
+    path: "/low-stock",
+    element: <LowStock />,
+    title: "Low Stock",
+    roles: ["admin"],
   },
   {
     path: "/sales",
@@ -60,16 +66,22 @@ export const protectedRoutes = [
     roles: ["admin"],
   },
   {
+   path: "/users",
+   element: <UserManagement />,
+   title: "Users",
+   roles: ["admin"],
+  },
+  {
     path: "/settings",
     element: <SettingsPage />,
     title: "Settings",
     roles: ["admin"],
-    children: [
-      {
-        path: "users",
-        element: <UserManagement />,
-        roles: ["admin"],
-      },
-    ],
+    // children: [
+    //   {
+    //     path: "users",
+    //     element: <UserManagement />,
+    //     roles: ["admin"],
+    //   },
+    // ],
   },
 ];
