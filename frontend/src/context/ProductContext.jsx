@@ -28,7 +28,7 @@ export const ProductProvider = ({ children }) => {
     setLoading(true);
     await createProductApi(data)
       .then((res) => {
-        toast.success(res.message || "Product created successfully!");
+        toast.success(res?.message || "Product created successfully!");
       })
       .catch((err) => {
         console.log(err);

@@ -36,7 +36,6 @@ const ProductForm = ({ product }) => {
 
   const [formData, setFormData] = useState({
     name: "",
-    // barcode: "",
     category: "",
     price: "",
     stock: "",
@@ -53,7 +52,6 @@ const ProductForm = ({ product }) => {
     if (product) {
       setFormData({
         name: product.name || "",
-        // barcode: product.barcode || "",
         category: product.category || "",
         price: product.price || "",
         stock: product.stock || "",
@@ -67,25 +65,60 @@ const ProductForm = ({ product }) => {
     }
   }, [product]);
 
+  // More comprehensive and organized categories
   const categories = [
+    // 🔌 Electronics & Accessories
     "Electronics",
     "Audio",
-    "Accessories",
-    "Cables",
     "Computers",
+    "Laptops",
+    "Mobiles",
+    "Accessories",
     "Peripherals",
+    "Cables",
     "Storage",
     "Networking",
+
+    // 🏠 Home & Utility
+    "Appliances",
+    "Lighting",
+    "Tools",
+
+    // 🛍️ General Merchandise
+    "Stationery",
+    "Packaging",
+    "Miscellaneous",
   ];
 
-  const units = ["pcs", "kg", "g", "l", "ml", "m", "cm", "box", "pack", "set"];
+  // Standardized and user-friendly unit list
+  const units = [
+    // 🔹 Count-based
+    "pcs", // pieces
+    "pack",
+    "box",
+    "set",
+    "pair",
+    "dozen",
+
+    // ⚖️ Weight-based
+    "kg",
+    "g",
+    "mg",
+
+    // 💧 Volume-based
+    "l", // litre
+    "ml",
+
+    // 📏 Length-based
+    "m",
+    "cm",
+    "mm",
+  ];
 
   const validateField = (name, value) => {
     switch (name) {
       case "name":
         return value.trim() === "" ? "Product name is required" : "";
-      // case "barcode":
-      //   return value.trim() === "" ? "Barcode is required" : "";
       case "category":
         return value === "" ? "Please select a category" : "";
       case "unit":
@@ -169,7 +202,6 @@ const ProductForm = ({ product }) => {
       if (
         [
           "name",
-          // "barcode",
           "category",
           "price",
           "stock",
@@ -186,7 +218,6 @@ const ProductForm = ({ product }) => {
       setErrors(newErrors);
       setTouched({
         name: true,
-        // barcode: true,
         category: true,
         price: true,
         stock: true,
@@ -199,7 +230,6 @@ const ProductForm = ({ product }) => {
     // Create FormData for file upload
     const submitData = new FormData();
     submitData.append("name", formData.name.trim());
-    // submitData.append("barcode", formData.barcode.trim());
     submitData.append("category", formData.category);
     submitData.append("price", formData.price);
     submitData.append("stock", formData.stock);
@@ -315,40 +345,6 @@ const ProductForm = ({ product }) => {
                       </div>
                     )}
                   </div>
-
-                  {/* Barcode
-                  <div>
-                    <label
-                      className={`block text-xs sm:text-sm font-semibold mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2 ${
-                        isDark ? "text-gray-300" : "text-gray-700"
-                      }`}
-                    >
-                      <Hash className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="truncate">Barcode</span>
-                      <span className="text-rose-500 flex-shrink-0">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="barcode"
-                      value={formData.barcode}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      placeholder="e.g., 1234567890123"
-                      className={`w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl border-2 transition-all focus:outline-none focus:ring-2 ${
-                        touched.barcode && errors.barcode
-                          ? "border-rose-500 focus:border-rose-500 focus:ring-rose-500/20"
-                          : isDark
-                          ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-violet-500 focus:ring-violet-500/20"
-                          : "bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-violet-400 focus:ring-violet-400/20"
-                      }`}
-                    />
-                    {touched.barcode && errors.barcode && (
-                      <div className="flex items-start gap-1 mt-1.5 text-rose-500 text-xs sm:text-sm">
-                        <AlertCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0 mt-0.5" />
-                        <span className="leading-tight">{errors.barcode}</span>
-                      </div>
-                    )}
-                  </div> */}
 
                   {/* Category */}
                   <div>
