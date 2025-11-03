@@ -267,7 +267,7 @@ const Layout = () => {
               </div>
             </div>
 
-            <NavItem icon={BarChart3} label="Dashboard" path="/dashboard" />
+            <NavItem icon={BarChart3} label="Dashboard" path="/" />
             <NavItem icon={ShoppingCart} label="POS / Billing" path="/pos" />
             <NavItem icon={Package} label="Products" path="/products" />
             <NavItem icon={Upload} label="Bulk Upload" path="/bulk-upload" />

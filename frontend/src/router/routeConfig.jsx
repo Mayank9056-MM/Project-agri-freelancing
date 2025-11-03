@@ -1,5 +1,6 @@
 import Dashboard from "@/pages/Dashboard/Dashboard";
 import POSPage from "@/pages/POS/POSPage";
+import BulkUpload from "@/pages/Products/BulkUpload";
 import ProductDetail from "@/pages/Products/ProductDetail";
 import ProductForm from "@/pages/Products/ProductForm";
 import ProductsList from "@/pages/Products/ProductsList";
@@ -45,6 +46,12 @@ export const protectedRoutes = [
     element: <POSPage />,
     title: "Point of Sale",
     roles: ["cashier", "admin"],
+  },
+  {
+   path: "/bulk-upload",
+   element: <BulkUpload />,
+   title: "Bulk Upload",
+   roles: ["admin"],
   },
   {
     path: "/sales",
