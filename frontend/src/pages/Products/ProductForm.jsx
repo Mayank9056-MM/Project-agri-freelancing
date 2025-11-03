@@ -32,12 +32,11 @@ const ProductForm = ({ product }) => {
   const navigate = useNavigate();
 
   const onCancel = () => navigate("/products");
-  const { getAllProducts, products, createProduct, setProducts } =
-    useContext(ProductContext);
+  const { loading, createProduct } = useContext(ProductContext);
 
   const [formData, setFormData] = useState({
     name: "",
-    barcode: "",
+    // barcode: "",
     category: "",
     price: "",
     stock: "",
@@ -54,7 +53,7 @@ const ProductForm = ({ product }) => {
     if (product) {
       setFormData({
         name: product.name || "",
-        barcode: product.barcode || "",
+        // barcode: product.barcode || "",
         category: product.category || "",
         price: product.price || "",
         stock: product.stock || "",
@@ -85,8 +84,8 @@ const ProductForm = ({ product }) => {
     switch (name) {
       case "name":
         return value.trim() === "" ? "Product name is required" : "";
-      case "barcode":
-        return value.trim() === "" ? "Barcode is required" : "";
+      // case "barcode":
+      //   return value.trim() === "" ? "Barcode is required" : "";
       case "category":
         return value === "" ? "Please select a category" : "";
       case "unit":
@@ -170,7 +169,7 @@ const ProductForm = ({ product }) => {
       if (
         [
           "name",
-          "barcode",
+          // "barcode",
           "category",
           "price",
           "stock",
@@ -187,7 +186,7 @@ const ProductForm = ({ product }) => {
       setErrors(newErrors);
       setTouched({
         name: true,
-        barcode: true,
+        // barcode: true,
         category: true,
         price: true,
         stock: true,
@@ -200,7 +199,7 @@ const ProductForm = ({ product }) => {
     // Create FormData for file upload
     const submitData = new FormData();
     submitData.append("name", formData.name.trim());
-    submitData.append("barcode", formData.barcode.trim());
+    // submitData.append("barcode", formData.barcode.trim());
     submitData.append("category", formData.category);
     submitData.append("price", formData.price);
     submitData.append("stock", formData.stock);
@@ -317,7 +316,7 @@ const ProductForm = ({ product }) => {
                     )}
                   </div>
 
-                  {/* Barcode */}
+                  {/* Barcode
                   <div>
                     <label
                       className={`block text-xs sm:text-sm font-semibold mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2 ${
@@ -349,7 +348,7 @@ const ProductForm = ({ product }) => {
                         <span className="leading-tight">{errors.barcode}</span>
                       </div>
                     )}
-                  </div>
+                  </div> */}
 
                   {/* Category */}
                   <div>
@@ -645,14 +644,24 @@ const ProductForm = ({ product }) => {
             </Button>
             <Button
               onClick={handleSubmit}
+              disabled={loading}
               className={`w-full sm:w-auto text-sm sm:text-base bg-gradient-to-r ${
                 isDark
                   ? "from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
                   : "from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
-              } shadow-lg`}
+              } shadow-lg disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              <Save className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2" />
-              {product ? "Update Product" : "Add Product"}
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
+                  Saving...
+                </span>
+              ) : (
+                <>
+                  <Save className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2" />
+                  {product ? "Update Product" : "Add Product"}
+                </>
+              )}
             </Button>
           </div>
         </div>
