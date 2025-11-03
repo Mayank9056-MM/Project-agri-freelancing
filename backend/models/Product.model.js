@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { PRODUCT_UNITS } from "../constants.js";
 
 const productSchema = new mongoose.Schema(
   {
@@ -33,7 +34,7 @@ const productSchema = new mongoose.Schema(
     },
     unit: {
       type: String,
-      enum: ["kg", "pcs", "litre", "box", "packet"], // you can customize
+      enum: PRODUCT_UNITS,
       default: "pcs",
     },
     barcode: {
