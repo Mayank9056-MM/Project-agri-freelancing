@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
   Moon,
@@ -31,6 +31,12 @@ const Layout = () => {
   const { logout, user } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const [lowStockCount, setLowStockCount] = useState(0);
+useEffect(() => {
+  fetch("/api/products/low-stock")
+    .then(res => res.json())
+    .then(data => setLowStockCount(data.count));
+}, []);
 
   const themeChange = async () => toggleTheme();
   const isDark = theme === "dark";
@@ -115,7 +121,7 @@ const Layout = () => {
                       ? "from-violet-600 to-purple-700 shadow-violet-900/50"
                       : "from-violet-500 to-purple-600 shadow-violet-500/30"
                   }`}
-                  onClick={() => navigate("/dashboard")}
+                  onClick={() => navigate("/")}
                 >
                   <Package className="h-6 w-6 text-white" />
                 </div>
@@ -126,7 +132,7 @@ const Layout = () => {
                         ? "from-white to-gray-300"
                         : "from-gray-900 to-gray-600"
                     } bg-clip-text text-transparent`}
-                    onClick={() => navigate("/dashboard")}
+                    onClick={() => navigate("/")}
                   >
                     StockFlow
                   </span>
@@ -202,7 +208,7 @@ const Layout = () => {
                       isDark ? "text-gray-200" : "text-gray-800"
                     }`}
                   >
-                    {user.role === "admin" ? "Admin" : "Cashier"}
+                    {user?.role === "admin" ? "Admin" : "Cashier"}
                   </span>
                   <span
                     className={`text-xs flex items-center gap-1 ${
@@ -271,12 +277,12 @@ const Layout = () => {
             <NavItem icon={ShoppingCart} label="POS / Billing" path="/pos" />
             <NavItem icon={Package} label="Products" path="/products" />
             <NavItem icon={Upload} label="Bulk Upload" path="/bulk-upload" />
-            <NavItem icon={FileText} label="Sales Reports" path="/reports" />
+            <NavItem icon={FileText} label="Sales Reports" path="/sales" />
             <NavItem
               icon={AlertCircle}
               label="Low Stock"
               path="/low-stock"
-              badge="12"
+              badge={lowStockCount}
             />
             {userRole === "admin" && (
               <NavItem icon={Users} label="User Management" path="/users" />
@@ -314,7 +320,7 @@ const Layout = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="p-4 space-y-2">
-                <NavItem icon={BarChart3} label="Dashboard" path="/dashboard" />
+                <NavItem icon={BarChart3} label="Dashboard" path="/" />
                 <NavItem
                   icon={ShoppingCart}
                   label="POS / Billing"

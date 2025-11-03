@@ -12,7 +12,7 @@ export const ProductProvider = ({ children }) => {
    * @returns {Promise<void>} A promise that resolves when all products have been retrieved.
    */
   const getAllProducts = async () => {
-    await getAllProductApi().then((res) => setProducts(res)).catch((err) => console.log(err))
+    await getAllProductApi().then((res) => setProducts(res?.products)).catch((err) => console.log(err))
   };
 
   const value = {

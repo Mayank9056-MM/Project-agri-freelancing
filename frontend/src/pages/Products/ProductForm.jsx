@@ -1,4 +1,3 @@
-
 import React, { useState, useContext, useEffect } from "react";
 import {
   Package,
@@ -11,7 +10,8 @@ import {
   Layers,
   TrendingUp,
   Box,
-  Smile,
+  Upload,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,15 +34,16 @@ const ProductForm = ({ product, onSave }) => {
 
   const [formData, setFormData] = useState({
     name: "",
-    sku: "",
+    barcode: "",
     category: "",
     price: "",
     stock: "",
-    reorderLevel: "",
-    image: "",
-    description: "",
+    unit: "",
+    low_stock_threshold: "",
+    image: null,
   });
 
+  const [imagePreview, setImagePreview] = useState("");
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
@@ -50,16 +51,19 @@ const ProductForm = ({ product, onSave }) => {
     if (product) {
       setFormData({
         name: product.name || "",
-        sku: product.sku || "",
+        barcode: product.barcode || "",
         category: product.category || "",
         price: product.price || "",
         stock: product.stock || "",
-        reorderLevel: product.reorderLevel || "",
-        image: product.image || "",
-        description: product.description || "",
+        unit: product.unit || "",
+        low_stock_threshold: product.low_stock_threshold || "",
+        image: null,
       });
+      if (product.image) {
+        setImagePreview(product.image);
+      }
     }
-  }, []);
+  }, [product]);
 
   const categories = [
     "Electronics",
@@ -72,33 +76,18 @@ const ProductForm = ({ product, onSave }) => {
     "Networking",
   ];
 
-  const emojiOptions = [
-    "💻",
-    "📱",
-    "🎧",
-    "🖱️",
-    "⌨️",
-    "🔌",
-    "📷",
-    "🖥️",
-    "⚡",
-    "🔋",
-    "💾",
-    "🖨️",
-    "📡",
-    "🎮",
-    "⌚",
-    "🎵",
-  ];
+  const units = ["pcs", "kg", "g", "l", "ml", "m", "cm", "box", "pack", "set"];
 
   const validateField = (name, value) => {
     switch (name) {
       case "name":
         return value.trim() === "" ? "Product name is required" : "";
-      case "sku":
-        return value.trim() === "" ? "SKU is required" : "";
+      case "barcode":
+        return value.trim() === "" ? "Barcode is required" : "";
       case "category":
         return value === "" ? "Please select a category" : "";
+      case "unit":
+        return value === "" ? "Please select a unit" : "";
       case "price":
         return value === "" || isNaN(value) || parseFloat(value) <= 0
           ? "Valid price is required"
@@ -107,9 +96,9 @@ const ProductForm = ({ product, onSave }) => {
         return value === "" || isNaN(value) || parseInt(value) < 0
           ? "Valid stock quantity is required"
           : "";
-      case "reorderLevel":
+      case "low_stock_threshold":
         return value === "" || isNaN(value) || parseInt(value) < 0
-          ? "Valid reorder level is required"
+          ? "Valid threshold is required"
           : "";
       default:
         return "";
@@ -128,6 +117,39 @@ const ProductForm = ({ product, onSave }) => {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        setErrors((prev) => ({
+          ...prev,
+          image: "Please select a valid image file",
+        }));
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors((prev) => ({
+          ...prev,
+          image: "Image size should be less than 5MB",
+        }));
+        return;
+      }
+
+      setFormData((prev) => ({ ...prev, image: file }));
+      setErrors((prev) => ({ ...prev, image: "" }));
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleBlur = (e) => {
     const { name, value } = e.target;
     setTouched((prev) => ({ ...prev, [name]: true }));
@@ -143,9 +165,15 @@ const ProductForm = ({ product, onSave }) => {
     const newErrors = {};
     Object.keys(formData).forEach((key) => {
       if (
-        ["name", "sku", "category", "price", "stock", "reorderLevel"].includes(
-          key
-        )
+        [
+          "name",
+          "barcode",
+          "category",
+          "price",
+          "stock",
+          "unit",
+          "low_stock_threshold",
+        ].includes(key)
       ) {
         const error = validateField(key, formData[key]);
         if (error) newErrors[key] = error;
@@ -156,33 +184,31 @@ const ProductForm = ({ product, onSave }) => {
       setErrors(newErrors);
       setTouched({
         name: true,
-        sku: true,
+        barcode: true,
         category: true,
         price: true,
         stock: true,
-        reorderLevel: true,
+        unit: true,
+        low_stock_threshold: true,
       });
       return;
     }
 
-    const stockValue = parseInt(formData.stock);
-    const reorderValue = parseInt(formData.reorderLevel);
+    // Create FormData for file upload
+    const submitData = new FormData();
+    submitData.append("name", formData.name.trim());
+    submitData.append("barcode", formData.barcode.trim());
+    submitData.append("category", formData.category);
+    submitData.append("price", formData.price);
+    submitData.append("stock", formData.stock);
+    submitData.append("unit", formData.unit);
+    submitData.append("low_stock_threshold", formData.low_stock_threshold);
 
-    let status = "in-stock";
-    if (stockValue === 0) {
-      status = "out-of-stock";
-    } else if (stockValue < reorderValue) {
-      status = "low-stock";
+    if (formData.image) {
+      submitData.append("image", formData.image);
     }
 
-    onSave({
-      ...product,
-      ...formData,
-      price: parseFloat(formData.price),
-      stock: stockValue,
-      reorderLevel: reorderValue,
-      status,
-    });
+    onSave(submitData);
   };
 
   return (
@@ -280,7 +306,7 @@ const ProductForm = ({ product, onSave }) => {
                     )}
                   </div>
 
-                  {/* SKU */}
+                  {/* Barcode */}
                   <div>
                     <label
                       className={`block text-xs sm:text-sm font-semibold mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2 ${
@@ -288,28 +314,28 @@ const ProductForm = ({ product, onSave }) => {
                       }`}
                     >
                       <Hash className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="truncate">SKU</span>
+                      <span className="truncate">Barcode</span>
                       <span className="text-rose-500 flex-shrink-0">*</span>
                     </label>
                     <input
                       type="text"
-                      name="sku"
-                      value={formData.sku}
+                      name="barcode"
+                      value={formData.barcode}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      placeholder="e.g., LAP-001"
+                      placeholder="e.g., 1234567890123"
                       className={`w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl border-2 transition-all focus:outline-none focus:ring-2 ${
-                        touched.sku && errors.sku
+                        touched.barcode && errors.barcode
                           ? "border-rose-500 focus:border-rose-500 focus:ring-rose-500/20"
                           : isDark
                           ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-violet-500 focus:ring-violet-500/20"
                           : "bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-violet-400 focus:ring-violet-400/20"
                       }`}
                     />
-                    {touched.sku && errors.sku && (
+                    {touched.barcode && errors.barcode && (
                       <div className="flex items-start gap-1 mt-1.5 text-rose-500 text-xs sm:text-sm">
                         <AlertCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0 mt-0.5" />
-                        <span className="leading-tight">{errors.sku}</span>
+                        <span className="leading-tight">{errors.barcode}</span>
                       </div>
                     )}
                   </div>
@@ -353,42 +379,113 @@ const ProductForm = ({ product, onSave }) => {
                     )}
                   </div>
 
-                  {/* Product Icon */}
+                  {/* Unit */}
                   <div>
                     <label
                       className={`block text-xs sm:text-sm font-semibold mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2 ${
                         isDark ? "text-gray-300" : "text-gray-700"
                       }`}
                     >
-                      <Smile className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="truncate">Product Icon</span>
+                      <Box className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="truncate">Unit</span>
+                      <span className="text-rose-500 flex-shrink-0">*</span>
                     </label>
-                    <div
-                      className={`grid grid-cols-8 gap-1 sm:gap-2 p-2 rounded-lg sm:rounded-xl border-2 ${
-                        isDark
-                          ? "bg-gray-800/50 border-gray-700"
-                          : "bg-gray-50 border-gray-200"
+                    <select
+                      name="unit"
+                      value={formData.unit}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      className={`w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl border-2 transition-all focus:outline-none focus:ring-2 ${
+                        touched.unit && errors.unit
+                          ? "border-rose-500 focus:border-rose-500 focus:ring-rose-500/20"
+                          : isDark
+                          ? "bg-gray-800 border-gray-700 text-white focus:border-violet-500 focus:ring-violet-500/20"
+                          : "bg-white border-gray-200 text-gray-900 focus:border-violet-400 focus:ring-violet-400/20"
                       }`}
                     >
-                      {emojiOptions.map((emoji) => (
-                        <button
-                          key={emoji}
-                          type="button"
-                          onClick={() =>
-                            setFormData((prev) => ({ ...prev, image: emoji }))
-                          }
-                          className={`aspect-square rounded-md sm:rounded-lg text-lg sm:text-xl lg:text-2xl transition-all hover:scale-110 active:scale-95 ${
-                            formData.image === emoji
-                              ? "bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg ring-2 ring-violet-400"
-                              : isDark
-                              ? "bg-gray-800 hover:bg-gray-700"
-                              : "bg-gray-100 hover:bg-gray-200"
+                      <option value="">Select a unit</option>
+                      {units.map((unit) => (
+                        <option key={unit} value={unit}>
+                          {unit}
+                        </option>
+                      ))}
+                    </select>
+                    {touched.unit && errors.unit && (
+                      <div className="flex items-start gap-1 mt-1.5 text-rose-500 text-xs sm:text-sm">
+                        <AlertCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0 mt-0.5" />
+                        <span className="leading-tight">{errors.unit}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Product Image */}
+              <div>
+                <label
+                  className={`block text-xs sm:text-sm font-semibold mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}
+                >
+                  <ImageIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <span className="truncate">Product Image</span>
+                </label>
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  {imagePreview && (
+                    <div
+                      className={`relative w-full sm:w-32 h-32 rounded-lg sm:rounded-xl overflow-hidden border-2 ${
+                        isDark ? "border-gray-700" : "border-gray-200"
+                      }`}
+                    >
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <label
+                      className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg sm:rounded-xl cursor-pointer transition-all ${
+                        isDark
+                          ? "bg-gray-800 border-gray-700 hover:bg-gray-700"
+                          : "bg-gray-50 border-gray-300 hover:bg-gray-100"
+                      }`}
+                    >
+                      <div className="flex flex-col items-center justify-center py-2">
+                        <Upload
+                          className={`h-8 w-8 mb-2 ${
+                            isDark ? "text-gray-400" : "text-gray-500"
+                          }`}
+                        />
+                        <p
+                          className={`text-xs sm:text-sm ${
+                            isDark ? "text-gray-400" : "text-gray-500"
                           }`}
                         >
-                          {emoji}
-                        </button>
-                      ))}
-                    </div>
+                          Click to upload image
+                        </p>
+                        <p
+                          className={`text-xs mt-1 ${
+                            isDark ? "text-gray-500" : "text-gray-400"
+                          }`}
+                        >
+                          PNG, JPG, JPEG (MAX. 5MB)
+                        </p>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                    </label>
+                    {errors.image && (
+                      <div className="flex items-start gap-1 mt-1.5 text-rose-500 text-xs sm:text-sm">
+                        <AlertCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0 mt-0.5" />
+                        <span className="leading-tight">{errors.image}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -475,7 +572,7 @@ const ProductForm = ({ product, onSave }) => {
                     )}
                   </div>
 
-                  {/* Reorder Level */}
+                  {/* Low Stock Threshold */}
                   <div>
                     <label
                       className={`block text-xs sm:text-sm font-semibold mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2 ${
@@ -483,58 +580,37 @@ const ProductForm = ({ product, onSave }) => {
                       }`}
                     >
                       <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="truncate">Reorder Level</span>
+                      <span className="truncate">Low Stock Threshold</span>
                       <span className="text-rose-500 flex-shrink-0">*</span>
                     </label>
                     <input
                       type="number"
-                      name="reorderLevel"
-                      value={formData.reorderLevel}
+                      name="low_stock_threshold"
+                      value={formData.low_stock_threshold}
                       onChange={handleChange}
                       onBlur={handleBlur}
                       placeholder="0"
                       min="0"
                       className={`w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl border-2 transition-all focus:outline-none focus:ring-2 ${
-                        touched.reorderLevel && errors.reorderLevel
+                        touched.low_stock_threshold &&
+                        errors.low_stock_threshold
                           ? "border-rose-500 focus:border-rose-500 focus:ring-rose-500/20"
                           : isDark
                           ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-violet-500 focus:ring-violet-500/20"
                           : "bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-violet-400 focus:ring-violet-400/20"
                       }`}
                     />
-                    {touched.reorderLevel && errors.reorderLevel && (
-                      <div className="flex items-start gap-1 mt-1.5 text-rose-500 text-xs sm:text-sm">
-                        <AlertCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0 mt-0.5" />
-                        <span className="leading-tight">
-                          {errors.reorderLevel}
-                        </span>
-                      </div>
-                    )}
+                    {touched.low_stock_threshold &&
+                      errors.low_stock_threshold && (
+                        <div className="flex items-start gap-1 mt-1.5 text-rose-500 text-xs sm:text-sm">
+                          <AlertCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0 mt-0.5" />
+                          <span className="leading-tight">
+                            {errors.low_stock_threshold}
+                          </span>
+                        </div>
+                      )}
                   </div>
                 </div>
-              </div>
-
-              {/* Description */}
-              <div>
-                <label
-                  className={`block text-xs sm:text-sm font-semibold mb-1.5 sm:mb-2 ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
-                  Description (Optional)
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  placeholder="Add product description..."
-                  rows={3}
-                  className={`w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl border-2 transition-all focus:outline-none focus:ring-2 resize-none ${
-                    isDark
-                      ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-violet-500 focus:ring-violet-500/20"
-                      : "bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-violet-400 focus:ring-violet-400/20"
-                  }`}
-                />
               </div>
             </div>
           </CardContent>
