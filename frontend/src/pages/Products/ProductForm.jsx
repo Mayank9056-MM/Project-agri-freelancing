@@ -22,13 +22,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ThemeContext } from "@/context/ThemeContext";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ProductContext } from "@/context/ProductContext";
 import toast from "react-hot-toast";
 
 const ProductForm = () => {
   const { theme } = useContext(ThemeContext);
   const isDark = theme === "dark";
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const { sku } = useParams();
@@ -36,13 +37,8 @@ const ProductForm = () => {
   const isEditMode = Boolean(sku);
 
   const onCancel = () => navigate("/products");
-  const {
-    loading,
-    createProduct,
-    updateProduct,
-    getProductBySku,
-    product,
-  } = useContext(ProductContext);
+  const { createProduct, updateProduct, getProductBySku, product } =
+    useContext(ProductContext);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -59,8 +55,9 @@ const ProductForm = () => {
   const [touched, setTouched] = useState({});
 
   useEffect(() => {
-    if (isEditMode) {
+    if (isEditMode && sku) {
       const fetchProduct = async () => {
+        setLoading(true);
         try {
           const data = await getProductBySku(sku);
           console.log(data, "data");
@@ -74,14 +71,21 @@ const ProductForm = () => {
             low_stock_threshold: data?.low_stock_threshold || "",
             image: data?.image || null,
           });
+
+          // Set image preview if image exists
+          if (data?.image) {
+            setImagePreview(data.image);
+          }
         } catch (err) {
           console.error(err);
           toast.error("Could not load product details");
+        } finally {
+          setLoading(false);
         }
       };
       fetchProduct();
     }
-  }, [isEditMode, sku]);
+  }, [isEditMode, sku, getProductBySku]);
 
   // More comprehensive and organized categories
   const categories = [
@@ -254,10 +258,11 @@ const ProductForm = () => {
     submitData.append("unit", formData.unit);
     submitData.append("low_stock_threshold", formData.low_stock_threshold);
 
-    if (formData.image) {
+    if (formData.image && typeof formData.image !== "string") {
       submitData.append("image", formData.image);
     }
-    if (sku) {
+
+    if (isEditMode && sku) {
       await onEdit(sku, submitData);
     } else {
       await onSave(submitData);
@@ -265,18 +270,24 @@ const ProductForm = () => {
   };
 
   const onEdit = async (sku, data) => {
+    setLoading(true);
     try {
       await updateProduct(sku, data);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const onSave = async (data) => {
+    setLoading(true);
     try {
       await createProduct(data);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(true);
     }
   };
 
@@ -305,11 +316,11 @@ const ProductForm = () => {
               >
                 <Package className="h-5 w-5 sm:h-6 sm:w-6 text-violet-500 flex-shrink-0" />
                 <span className="truncate">
-                  {product ? "Edit Product" : "Add New Product"}
+                  {isEditMode ? "Edit Product" : "Add New Product"}
                 </span>
               </CardTitle>
               <CardDescription className="mt-1 text-xs sm:text-sm">
-                {product
+                {isEditMode
                   ? "Update product information and inventory details"
                   : "Fill in the details to add a new product"}
               </CardDescription>
@@ -676,17 +687,17 @@ const ProductForm = () => {
                   : "from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
               } shadow-lg disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              {loading ? (
+              {/* {loading ? (
                 <span className="flex items-center gap-2">
                   <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
                   Saving...
                 </span>
-              ) : (
+              ) : ( */}
                 <>
                   <Save className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2" />
-                  {product ? "Update Product" : "Add Product"}
+                  {isEditMode ? "Update Product" : "Add Product"}
                 </>
-              )}
+              {/* )} */}
             </Button>
           </div>
         </div>
