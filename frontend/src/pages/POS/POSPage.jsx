@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Camera,
   Scan,
@@ -27,36 +27,45 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ThemeContext } from "@/context/ThemeContext";
+import { SaleContext } from "@/context/SaleContext";
+import { toast } from "react-hot-toast";
+import { generateInvoice } from "@/utils/generateInvoice";
+import { ProductContext } from "@/context/ProductContext";
 
 const POSPage = () => {
   const { theme } = useContext(ThemeContext);
   const isDark = theme === "dark";
-  
+
   const [cart, setCart] = useState([
     { id: 1, name: "Wireless Mouse", price: 29.99, quantity: 2, sku: "WM-001" },
     { id: 2, name: "USB-C Cable", price: 12.99, quantity: 1, sku: "UC-045" },
-    { id: 3, name: "Laptop Stand", price: 45.00, quantity: 1, sku: "LS-203" },
+    { id: 3, name: "Laptop Stand", price: 45.0, quantity: 1, sku: "LS-203" },
   ]);
-  
+
   const [discount, setDiscount] = useState(0);
   const [customerName, setCustomerName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
   const discountAmount = (subtotal * discount) / 100;
-  const tax = ((subtotal - discountAmount) * 0.18); // 18% tax
+  const tax = (subtotal - discountAmount) * 0.18; // 18% tax
   const total = subtotal - discountAmount + tax;
 
   const updateQuantity = (id, change) => {
-    setCart(cart.map(item => 
-      item.id === id 
-        ? { ...item, quantity: Math.max(1, item.quantity + change) }
-        : item
-    ));
+    setCart(
+      cart.map((item) =>
+        item.id === id
+          ? { ...item, quantity: Math.max(1, item.quantity + change) }
+          : item
+      )
+    );
   };
 
   const removeItem = (id) => {
-    setCart(cart.filter(item => item.id !== id));
+    setCart(cart.filter((item) => item.id !== id));
   };
 
   const clearCart = () => {
@@ -65,14 +74,93 @@ const POSPage = () => {
     setCustomerName("");
   };
 
+  const { createSale } = useContext(SaleContext);
+  const { products, getAllProducts, loading } = useContext(ProductContext);
+
+  useEffect(() => {
+    getAllProducts();
+  }, []);
+
+  const handleCheckout = async (paymentMethod) => {
+    if (cart.length === 0) {
+      toast.error("Cart is empty!");
+      return;
+    }
+
+    try {
+      const items = cart.map((item) => ({
+        sku: item.sku,
+        name: item.name,
+        qty: item.quantity,
+        price: item.price,
+        subtotal: item.price * item.quantity,
+      }));
+
+      const payload = {
+        items,
+        paymentMethod,
+        paymentStatus: "paid",
+      };
+
+      // Call API through context
+      const res = await createSale(payload);
+
+      toast.success(`Sale successful! Sale ID: ${res.saleId}`);
+
+      // Prepare sale data for invoice
+      const saleData = {
+        saleId: res.saleId,
+        items,
+        subtotal: items.reduce((s, i) => s + i.subtotal, 0),
+        discount,
+        tax: (subtotal - (subtotal * discount) / 100) * 0.18,
+        total,
+        paymentMethod,
+        customerName,
+      };
+
+      // Generate invoice PDF
+      generateInvoice(saleData);
+
+      clearCart();
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || "Sale failed");
+    }
+  };
+
   const quickDiscounts = [5, 10, 15, 20];
-  
-  const recentProducts = [
-    { id: 101, name: "Keyboard Mechanical", price: 89.99, stock: 15 },
-    { id: 102, name: "Webcam HD", price: 59.99, stock: 8 },
-    { id: 103, name: "Mouse Pad RGB", price: 24.99, stock: 32 },
-    { id: 104, name: "Headphones Wireless", price: 129.99, stock: 5 },
-  ];
+
+  const addToCart = (product) => {
+    setCart((prev) => {
+      const existing = prev.find((item) => item.sku === product.sku);
+      if (existing) {
+        // Update quantity if already in cart
+        return prev.map((item) =>
+          item.sku === product.sku
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      // Add new product
+      return [
+        ...prev,
+        {
+          id: product._id,
+          name: product.name,
+          price: product.price,
+          quantity: 1,
+          sku: product.sku,
+        },
+      ];
+    });
+  };
+
+  const filteredProducts = products?.filter(
+    (product) =>
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.sku.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
@@ -169,40 +257,47 @@ const POSPage = () => {
 
               {/* Quick Add Products */}
               <div className="grid grid-cols-2 gap-3">
-                {recentProducts.map((product) => (
-                  <button
-                    key={product.id}
-                    className={`p-3 rounded-xl text-left transition-all hover:scale-[1.02] ${
-                      isDark
-                        ? "bg-gray-800/50 hover:bg-gray-800 border border-gray-700/50"
-                        : "bg-gray-50 hover:bg-gray-100 border border-gray-200"
-                    }`}
-                  >
-                    <p
-                      className={`font-semibold text-sm ${
-                        isDark ? "text-white" : "text-gray-900"
+                {loading ? (
+                  <p className="text-center text-gray-500">
+                    Loading products...
+                  </p>
+                ) : (
+                  filteredProducts?.slice(0, 8).map((product) => (
+                    <button
+                      key={product._id}
+                      onClick={() => addToCart(product)}
+                      className={`p-3 rounded-xl text-left transition-all hover:scale-[1.02] ${
+                        isDark
+                          ? "bg-gray-800/50 hover:bg-gray-800 border border-gray-700/50"
+                          : "bg-gray-50 hover:bg-gray-100 border border-gray-200"
                       }`}
                     >
-                      {product.name}
-                    </p>
-                    <div className="flex items-center justify-between mt-1">
                       <p
-                        className={`text-sm font-bold ${
-                          isDark ? "text-emerald-400" : "text-emerald-600"
+                        className={`font-semibold text-sm ${
+                          isDark ? "text-white" : "text-gray-900"
                         }`}
                       >
-                        ${product.price}
+                        {product.name}
                       </p>
-                      <span
-                        className={`text-xs ${
-                          isDark ? "text-gray-500" : "text-gray-500"
-                        }`}
-                      >
-                        Stock: {product.stock}
-                      </span>
-                    </div>
-                  </button>
-                ))}
+                      <div className="flex items-center justify-between mt-1">
+                        <p
+                          className={`text-sm font-bold ${
+                            isDark ? "text-emerald-400" : "text-emerald-600"
+                          }`}
+                        >
+                          ₹{product.price}
+                        </p>
+                        <span
+                          className={`text-xs ${
+                            isDark ? "text-gray-500" : "text-gray-500"
+                          }`}
+                        >
+                          Stock: {product.stock}
+                        </span>
+                      </div>
+                    </button>
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -464,9 +559,7 @@ const POSPage = () => {
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span
-                    className={isDark ? "text-gray-400" : "text-gray-600"}
-                  >
+                  <span className={isDark ? "text-gray-400" : "text-gray-600"}>
                     Subtotal
                   </span>
                   <span
@@ -488,9 +581,7 @@ const POSPage = () => {
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span
-                    className={isDark ? "text-gray-400" : "text-gray-600"}
-                  >
+                  <span className={isDark ? "text-gray-400" : "text-gray-600"}>
                     Tax (18%)
                   </span>
                   <span
@@ -531,6 +622,7 @@ const POSPage = () => {
               <div className="space-y-2 pt-2">
                 <Button
                   disabled={cart.length === 0}
+                  onClick={() => handleCheckout("upi")}
                   className={`w-full h-12 bg-gradient-to-r ${
                     isDark
                       ? "from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
@@ -542,6 +634,7 @@ const POSPage = () => {
                 </Button>
                 <Button
                   disabled={cart.length === 0}
+                  onClick={() => handleCheckout("card")}
                   className={`w-full h-12 bg-gradient-to-r ${
                     isDark
                       ? "from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
@@ -553,6 +646,7 @@ const POSPage = () => {
                 </Button>
                 <Button
                   disabled={cart.length === 0}
+                  onClick={() => handleCheckout("cash")}
                   className={`w-full h-12 bg-gradient-to-r ${
                     isDark
                       ? "from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700"
