@@ -693,10 +693,10 @@ const ProductForm = () => {
                   Saving...
                 </span>
               ) : ( */}
-                <>
-                  <Save className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2" />
-                  {isEditMode ? "Update Product" : "Add Product"}
-                </>
+              <>
+                <Save className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2" />
+                {isEditMode ? "Update Product" : "Add Product"}
+              </>
               {/* )} */}
             </Button>
           </div>
