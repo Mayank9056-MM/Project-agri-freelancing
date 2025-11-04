@@ -1,3 +1,4 @@
+import { isValidObjectId } from "mongoose";
 import Product from "../models/Product.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
@@ -142,3 +143,21 @@ export const deleteProduct = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+export const getProductBySku = async (req,res) => {
+  try {
+    const sku = req.params.sku;
+
+    if(!sku){
+      throw new Error("sku is required");
+    }
+
+    const product = await Product.findOne({sku});
+    if(!product) return res.status(404).json({message:"Product not found"});
+    res.status(200).json({product});
+    
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ message: error.message });
+  }
+}
