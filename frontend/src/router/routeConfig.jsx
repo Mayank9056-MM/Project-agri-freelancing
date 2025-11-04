@@ -2,6 +2,7 @@ import Dashboard from "@/pages/Dashboard/Dashboard";
 import LowStock from "@/pages/Dashboard/LowStockList";
 import POSPage from "@/pages/POS/POSPage";
 import BulkUpload from "@/pages/Products/BulkUpload";
+import DeleteProduct from "@/pages/Products/DeleteProduct";
 import ProductDetail from "@/pages/Products/ProductDetail";
 import ProductForm from "@/pages/Products/ProductForm";
 import ProductsList from "@/pages/Products/ProductsList";
@@ -43,7 +44,7 @@ export const protectedRoutes = [
   },
   {
     path: "/products/delete/:sku",
-    element: <ProductForm />,
+    element: <DeleteProduct />,
     title: "Delete product",
     roles: ["admin"],
   },
