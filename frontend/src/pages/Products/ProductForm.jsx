@@ -36,8 +36,13 @@ const ProductForm = () => {
   const isEditMode = Boolean(sku);
 
   const onCancel = () => navigate("/products");
-  const { loading, createProduct, updateProduct, getProductBySku, setLoading } =
-    useContext(ProductContext);
+  const {
+    loading,
+    createProduct,
+    updateProduct,
+    getProductBySku,
+    product,
+  } = useContext(ProductContext);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -56,10 +61,9 @@ const ProductForm = () => {
   useEffect(() => {
     if (isEditMode) {
       const fetchProduct = async () => {
-        setLoading(true);
         try {
           const data = await getProductBySku(sku);
-          console.log(data,"data")
+          console.log(data, "data");
 
           setFormData({
             name: data?.name || "",
@@ -73,8 +77,6 @@ const ProductForm = () => {
         } catch (err) {
           console.error(err);
           toast.error("Could not load product details");
-        } finally {
-          setLoading(false);
         }
       };
       fetchProduct();

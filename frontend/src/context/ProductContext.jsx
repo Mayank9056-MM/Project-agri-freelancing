@@ -67,6 +67,7 @@ export const ProductProvider = ({ children }) => {
   };
 
   const getProductBySku = async(sku) => {
+    setLoading(true)
     try {
       const res = await getProductBySkuApi(sku);
 
@@ -75,6 +76,8 @@ export const ProductProvider = ({ children }) => {
 
     } catch (error) {
       console.log(error)
+    } finally {
+      setLoading(false)
     }
   }
 
