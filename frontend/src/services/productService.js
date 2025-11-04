@@ -68,3 +68,18 @@ export const deleteProductApi = async (sku) => {
     console.log(error);
   }
 };
+
+/**
+ * Retrieves a product from the database by SKU.
+ *
+ * @param {string} sku - The SKU of the product to retrieve.
+ * @returns {Promise<object>} A promise that resolves with the product object.
+ */
+export const getProductBySkuApi = async (sku) => {
+  try {
+    const res = await api.get(`product/${sku}`);
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+};

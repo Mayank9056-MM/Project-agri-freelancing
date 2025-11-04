@@ -22,17 +22,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ThemeContext } from "@/context/ThemeContext";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ProductContext } from "@/context/ProductContext";
+import toast from "react-hot-toast";
 
-const ProductForm = ({ product }) => {
+const ProductForm = () => {
   const { theme } = useContext(ThemeContext);
   const isDark = theme === "dark";
 
   const navigate = useNavigate();
+  const { sku } = useParams();
+
+  const isEditMode = Boolean(sku);
 
   const onCancel = () => navigate("/products");
-  const { loading, createProduct } = useContext(ProductContext);
+  const { loading, createProduct, updateProduct, getProductBySku, setLoading } =
+    useContext(ProductContext);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -49,21 +54,32 @@ const ProductForm = ({ product }) => {
   const [touched, setTouched] = useState({});
 
   useEffect(() => {
-    if (product) {
-      setFormData({
-        name: product.name || "",
-        category: product.category || "",
-        price: product.price || "",
-        stock: product.stock || "",
-        unit: product.unit || "",
-        low_stock_threshold: product.low_stock_threshold || "",
-        image: null,
-      });
-      if (product.image) {
-        setImagePreview(product.image);
-      }
+    if (isEditMode) {
+      const fetchProduct = async () => {
+        setLoading(true);
+        try {
+          const data = await getProductBySku(sku);
+          console.log(data,"data")
+
+          setFormData({
+            name: data?.name || "",
+            price: data?.price || "",
+            category: data?.category || "",
+            stock: data?.stock || "",
+            unit: data?.unit || "",
+            low_stock_threshold: data?.low_stock_threshold || "",
+            image: data?.image || null,
+          });
+        } catch (err) {
+          console.error(err);
+          toast.error("Could not load product details");
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchProduct();
     }
-  }, [product]);
+  }, [isEditMode, sku]);
 
   // More comprehensive and organized categories
   const categories = [
@@ -194,7 +210,7 @@ const ProductForm = ({ product }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newErrors = {};
@@ -239,8 +255,19 @@ const ProductForm = ({ product }) => {
     if (formData.image) {
       submitData.append("image", formData.image);
     }
+    if (sku) {
+      await onEdit(sku, submitData);
+    } else {
+      await onSave(submitData);
+    }
+  };
 
-    onSave(submitData);
+  const onEdit = async (sku, data) => {
+    try {
+      await updateProduct(sku, data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const onSave = async (data) => {

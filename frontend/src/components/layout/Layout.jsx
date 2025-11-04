@@ -33,9 +33,9 @@ const Layout = () => {
   const location = useLocation();
   const [lowStockCount, setLowStockCount] = useState(0);
 useEffect(() => {
-  fetch("/api/products/low-stock")
-    .then(res => res.json())
-    .then(data => setLowStockCount(data.count));
+  // fetch("/api/products/low-stock")
+  //   .then(res => res.json())
+  //   .then(data => setLowStockCount(data.count));
 }, []);
 
   const themeChange = async () => toggleTheme();

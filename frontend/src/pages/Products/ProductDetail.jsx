@@ -30,7 +30,7 @@ const ProductDetails = () => {
   const { theme } = useContext(ThemeContext);
   const isDark = theme === "dark";
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { sku } = useParams();
 
   const [isEditing, setIsEditing] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);

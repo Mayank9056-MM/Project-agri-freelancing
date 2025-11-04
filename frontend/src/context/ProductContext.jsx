@@ -1,5 +1,4 @@
-import { createProductApi, getAllProductApi } from "@/services/productService";
-import { set } from "date-fns";
+import { createProductApi, deleteProductApi, getAllProductApi, getProductBySkuApi, updateProductApi } from "@/services/productService";
 import { createContext, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -37,12 +36,57 @@ export const ProductProvider = ({ children }) => {
       .finally(() => setLoading(false));
   };
 
+    // ✏️ Update
+  const updateProduct = async (id, data) => {
+    setLoading(true);
+    try {
+      const res = await updateProductApi(id, data);
+      toast.success(res?.message || "Product updated successfully!");
+      await getAllProducts();
+    } catch (err) {
+      console.log(err);
+      toast.error(err?.response?.data?.message || "Failed to update product");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ❌ Delete
+  const deleteProduct = async (id) => {
+    setLoading(true);
+    try {
+      const res = await deleteProductApi(id);
+      toast.success(res?.message || "Product deleted successfully!");
+      await getAllProducts();
+    } catch (err) {
+      console.log(err);
+      toast.error(err?.response?.data?.message || "Failed to delete product");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getProductBySku = async(sku) => {
+    try {
+      const res = await getProductBySkuApi(sku);
+
+      console.log(res);
+      return res.product
+
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const value = {
     getAllProducts,
     products,
     createProduct,
     setProducts,
+    updateProduct,
+    deleteProduct,
     loading,
+    getProductBySku
   };
 
   return (

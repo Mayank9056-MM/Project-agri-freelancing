@@ -24,7 +24,7 @@ import { ThemeContext } from "@/context/ThemeContext";
 import { Navigate, useNavigate } from "react-router-dom";
 import { ProductContext } from "@/context/ProductContext";
 
-const ProductList = ({ onEdit, onDelete, onView }) => {
+const ProductList = ({ onView }) => {
   const { theme } = useContext(ThemeContext);
   const isDark = theme === "dark";
 
@@ -101,6 +101,14 @@ const ProductList = ({ onEdit, onDelete, onView }) => {
     if (product.stock < product.low_stock_threshold)
       return <TrendingDown className="h-4 w-4" />;
     return <TrendingUp className="h-4 w-4" />;
+  };
+
+  const onEdit = (product) => {
+    navigate(`/products/edit/${product._id}`, { state: { product } });
+  };
+
+  const onDelete = (product) => {
+    navigate(`/products/delete/${product._id}`);
   };
 
   return (
@@ -390,10 +398,11 @@ const ProductList = ({ onEdit, onDelete, onView }) => {
                     <Eye className="h-4 w-4" />
                   </Button>
                   <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit(product);
-                    }}
+                    onClick={() =>
+                      navigate(`/products/edit/${product.sku}`, {
+                        state: { product },
+                      })
+                    }
                     className={`flex-1 bg-gradient-to-r ${
                       isDark
                         ? "from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
@@ -403,10 +412,7 @@ const ProductList = ({ onEdit, onDelete, onView }) => {
                     <Edit2 className="h-4 w-4" />
                   </Button>
                   <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete(product);
-                    }}
+                    onClick={() => navigate(`/products/delete/${product.sku}`)}
                     className={`flex-1 bg-gradient-to-r ${
                       isDark
                         ? "from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700"
@@ -452,5 +458,4 @@ const ProductList = ({ onEdit, onDelete, onView }) => {
     </div>
   );
 };
-
 export default ProductList;

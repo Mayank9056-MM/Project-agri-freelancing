@@ -154,7 +154,7 @@ export const getProductBySku = async (req,res) => {
 
     const product = await Product.findOne({sku});
     if(!product) return res.status(404).json({message:"Product not found"});
-    res.status(200).json({product});
+    res.status(200).json({success: true,product,message:"Product fetched successfully"});
     
   } catch (error) {
     console.log(error);

@@ -36,7 +36,19 @@ export const protectedRoutes = [
     roles: ["admin"],
   },
   {
-    path: "/products/:id",
+    path:  "/products/edit/:sku",
+    element: <ProductForm />,
+    title: "Edit product",
+    roles: ["admin"],
+  },
+  {
+    path: "/products/delete/:sku",
+    element: <ProductForm />,
+    title: "Delete product",
+    roles: ["admin"],
+  },
+  {
+    path: "/product/:sku",
     element: <ProductDetail />,
     title: "Product Details",
     roles: ["admin"],
@@ -66,10 +78,10 @@ export const protectedRoutes = [
     roles: ["admin"],
   },
   {
-   path: "/users",
-   element: <UserManagement />,
-   title: "Users",
-   roles: ["admin"],
+    path: "/users",
+    element: <UserManagement />,
+    title: "Users",
+    roles: ["admin"],
   },
   {
     path: "/settings",

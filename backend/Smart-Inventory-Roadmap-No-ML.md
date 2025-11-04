@@ -188,16 +188,6 @@ SKU001,Tomato,Vegetable,40,100,kg,,
 - Dockerize + deploy (Vercel + Render/Cloud Run).  
 - Create simple user manual.
 
----
-
-## 11 — Estimated cost (INR) — for freelance quoting
-- **MVP (core features)**: ₹20,000 – ₹40,000  
-- **MVP + polished UI + deployment**: ₹40,000 – ₹70,000
-
-(Prices depend on your experience, timeline and client SLA.)
-
----
-
 ## 12 — Deliverables you should hand to client
 - Source code (GitHub link)  
 - Deployed app URL (staging/production)  
@@ -281,51 +271,99 @@ smart-inventory-billing/
 
 ```
  frontend/
+├── public/
+│   ├── logo.svg
+│   ├── favicon.ico
+│   └── manifest.json
+│
 ├── src/
-│   ├── assets/                    # Images, logos, icons
-│   ├── components/                # Reusable UI parts
-│   │   ├── Navbar.jsx
-│   │   ├── Sidebar.jsx
-│   │   ├── ProductCard.jsx
-│   │   ├── BarcodeScanner.jsx
-│   │   ├── PaymentQRModal.jsx
-│   │   └── ReceiptPrint.jsx
+│   ├── assets/                    # Static files (images, icons, CSV samples)
+│   │   ├── logo.png
+│   │   ├── barcode-demo.svg
+│   │   └── sample-products.csv
 │   │
-│   ├── pages/                     # Main views
-│   │   ├── Login.jsx
-│   │   ├── Dashboard.jsx
-│   │   ├── Products.jsx
-│   │   ├── ProductForm.jsx
-│   │   ├── POS.jsx
-│   │   ├── SalesReport.jsx
-│   │   └── Settings.jsx
+│   ├── components/                # Reusable UI components
+│   │   ├── layout/
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── Sidebar.jsx
+│   │   │   ├── Layout.jsx         # Wraps sidebar + navbar + children
+│   │   │   └── ProtectedRoute.jsx # Auth check wrapper
+│   │   │
+│   │   ├── ui/
+│   │   │   ├── Button.jsx
+│   │   │   ├── Card.jsx
+│   │   │   ├── Input.jsx
+│   │   │   ├── Modal.jsx
+│   │   │   └── Table.jsx
+│   │   │
+│   │   ├── POS/
+│   │   │   ├── BarcodeScanner.jsx # Uses html5-qrcode or quagga
+│   │   │   ├── CartItem.jsx
+│   │   │   └── PaymentQRModal.jsx
+│   │   │
+│   │   └── Reports/
+│   │       ├── SalesChart.jsx
+│   │       └── TopProductsTable.jsx
 │   │
-│   ├── context/                   # React context (Auth, Cart)
+│   ├── pages/
+│   │   ├── Auth/
+│   │   │   ├── Login.jsx
+│   │   │   └── Signup.jsx
+│   │   │
+│   │   ├── Dashboard/
+│   │   │   ├── Dashboard.jsx      # Main admin home (KPIs, charts)
+│   │   │   └── LowStockList.jsx
+│   │   │
+│   │   ├── Products/
+│   │   │   ├── ProductsList.jsx
+│   │   │   ├── ProductForm.jsx
+│   │   │   └── ProductDetail.jsx
+│   │   │
+│   │   ├── POS/
+│   │   │   ├── POSPage.jsx
+│   │   │   └── ReceiptPage.jsx
+│   │   │
+│   │   ├── Sales/
+│   │   │   ├── SalesReport.jsx
+│   │   │   └── SaleDetail.jsx
+│   │   │
+│   │   └── Settings/
+│   │       ├── SettingsPage.jsx
+│   │       └── UserManagement.jsx
+│   │
+│   ├── context/
 │   │   ├── AuthContext.jsx
 │   │   ├── CartContext.jsx
 │   │   └── ProductContext.jsx
 │   │
-│   ├── services/                  # API calls
-│   │   ├── api.js                 # axios config
+│   ├── services/
+│   │   ├── api.js                 # axios instance
+│   │   ├── authService.js
 │   │   ├── productService.js
 │   │   ├── saleService.js
-│   │   ├── authService.js
-│   │   └── reportService.js
+│   │   ├── reportService.js
+│   │   └── uploadService.js       # CSV uploads
 │   │
-│   ├── hooks/                     # Custom hooks (useAuth, useCart)
+│   ├── hooks/
 │   │   ├── useAuth.js
+│   │   ├── useFetch.js
 │   │   └── useCart.js
 │   │
-│   ├── styles/                    # Tailwind config or global CSS
-│   │   └── index.css
+│   ├── router/
+│   │   ├── AppRouter.jsx          # All routes with roles (admin/cashier)
+│   │   └── routesConfig.js
+│   │
+│   ├── styles/
+│   │   ├── globals.css
+│   │   └── tailwind.css
 │   │
 │   ├── App.jsx
-│   ├── main.jsx                   # Entry point
-│   └── router.jsx                 # React Router setup
+│   ├── main.jsx
+│   └── vite.config.js
 │
+├── .env
 ├── package.json
-├── vite.config.js
-└── .env
+└── tailwind.config.js
 
 ```
 

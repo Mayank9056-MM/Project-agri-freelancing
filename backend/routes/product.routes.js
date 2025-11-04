@@ -5,7 +5,7 @@ import {
   createProduct,
   deleteProduct,
   getAllProducts,
-  getProductById,
+  getProductBySku,
   updateProduct,
 } from "../controllers/product.controllers.js";
 
@@ -19,6 +19,6 @@ productRouter
   .route("/:sku")
   .patch(verifyAuth, verifyAdmin, upload.single("image"), updateProduct)
   .delete(verifyAuth, verifyAdmin, deleteProduct)
-  .get(verifyAuth, verifyAdmin, getProductById);
+  .get(verifyAuth, verifyAdmin, getProductBySku);
 
 export default productRouter;
