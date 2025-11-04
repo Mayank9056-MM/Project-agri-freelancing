@@ -12,9 +12,9 @@ const createAdmin = async (req, res) => {
   let admin = await User.findOne({ role: "admin" });
   if (!admin) {
     console.log("Creating admin role...");
-
+    let avatar;
     try {
-      const avatar = uploadOnCloudinary("/public/admin.svg");
+       avatar = uploadOnCloudinary("/public/admin.svg");
 
       if (!avatar) {
         return res
