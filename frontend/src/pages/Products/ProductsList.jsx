@@ -398,11 +398,10 @@ const ProductList = ({ onView }) => {
                     <Eye className="h-4 w-4" />
                   </Button>
                   <Button
-                    onClick={() =>
-                      navigate(`/products/edit/${product.sku}`, {
-                        state: { product },
-                      })
-                    }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/products/edit/${product.sku}`);
+                    }}
                     className={`flex-1 bg-gradient-to-r ${
                       isDark
                         ? "from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
@@ -412,7 +411,10 @@ const ProductList = ({ onView }) => {
                     <Edit2 className="h-4 w-4" />
                   </Button>
                   <Button
-                    onClick={() => navigate(`/products/delete/${product.sku}`)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/products/delete/${product.sku}`);
+                    }}
                     className={`flex-1 bg-gradient-to-r ${
                       isDark
                         ? "from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700"
