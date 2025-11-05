@@ -98,7 +98,8 @@ export const getProductBySkuApi = async (sku) => {
  */
 export const bulkUploadProductsApi = async (data) => {
   try {
-    const res = await api.post("/bulk-upload", data);
+    console.log(data)
+    const res = await api.post("product/bulk-upload", data);
     console.log(res);
     return res.data;
   } catch (error) {

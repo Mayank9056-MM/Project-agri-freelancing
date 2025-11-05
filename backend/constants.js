@@ -2,6 +2,7 @@ export const DB_NAME = "stock-pricing";
 
 export const PRODUCT_UNITS = [
   "pcs", // pieces
+  "piece",
   "box",
   "pack",
   "packet",

@@ -203,26 +203,39 @@ export const getProductBySku = async (req, res) => {
 export const bulkUploadProducts = async (req, res) => {
   try {
     const products = req.body.products;
+    console.log(products);
 
     if (!Array.isArray(products) || products.length === 0) {
       return res.status(400).json({ message: "No product data found." });
     }
 
-    const validProducts = products.map((p) => ({
+    const existingCount = await Product.countDocuments();
+
+    console.log(existingCount)
+
+    const validProducts = products.map((p, index) => ({
+      sku: `SKU${String(existingCount + index + 1).padStart(3, "0")}`,
+      barcode: String(Math.floor(100000000000 + Math.random() * 900000000000)),
       name: p.name,
       price: Number(p.price) || 0,
       category: p.category || "Uncategorized",
       stock: Number(p.stock) || 0,
       unit: p.unit || "piece",
       description: p.description || "",
-      low_stock_threshold: p.low_stock_threshold || 0,
+      low_stock_threshold: Number(p.low_stock_threshold) || 0,
     }));
 
-    await Product.insertMany(validProducts, { ordered: false });
+    console.log(validProducts)
+
+    const insertedProducts = await Product.insertMany(validProducts, {
+      ordered: false,
+    });
+
+    console.log(insertedProducts);
 
     res.status(201).json({
-      message: `${validProducts.length} products uploaded successfully`,
-      count: validProducts.length,
+      message: `${insertedProducts.length} products uploaded successfully`,
+      count: insertedProducts.length,
     });
   } catch (error) {
     console.error(error);

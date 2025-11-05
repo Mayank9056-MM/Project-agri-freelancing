@@ -14,7 +14,7 @@ const productSchema = new mongoose.Schema(
     },
     image: {
       type: String,
-      required: true,
+      // required: true,
       default: "/public/placeholder.png",
     },
     category: {
@@ -45,6 +45,9 @@ const productSchema = new mongoose.Schema(
     low_stock_threshold: {
       type: Number,
       default: 10,
+    },
+    description: {
+      type: String,
     },
   },
   { timestamps: true }

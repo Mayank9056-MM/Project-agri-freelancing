@@ -22,9 +22,12 @@ import {
 } from "@/components/ui/card";
 import { ThemeContext } from "@/context/ThemeContext";
 import Papa from "papaparse";
+import toast from "react-hot-toast";
+import { ProductContext } from "@/context/ProductContext";
 
 const BulkUpload = () => {
   const { theme } = useContext(ThemeContext);
+  const { bulkUpload } = useContext(ProductContext);
   const isDark = theme === "dark";
 
   const [file, setFile] = useState(null);
@@ -46,35 +49,25 @@ const BulkUpload = () => {
   }, []);
 
   const validateRow = (row, index) => {
-    const errors = [];
-    
-    if (!row.name || row.name.trim() === "") {
-      errors.push(`Row ${index + 2}: Product name is required`);
-    }
-    if (!row.sku || row.sku.trim() === "") {
-      errors.push(`Row ${index + 2}: SKU is required`);
-    }
-    if (!row.category || row.category.trim() === "") {
-      errors.push(`Row ${index + 2}: Category is required`);
-    }
-    if (!row.price || isNaN(row.price) || parseFloat(row.price) <= 0) {
-      errors.push(`Row ${index + 2}: Valid price is required`);
-    }
-    if (row.stock === undefined || isNaN(row.stock) || parseInt(row.stock) < 0) {
-      errors.push(`Row ${index + 2}: Valid stock quantity is required`);
-    }
-    if (row.reorderLevel === undefined || isNaN(row.reorderLevel) || parseInt(row.reorderLevel) < 0) {
-      errors.push(`Row ${index + 2}: Valid reorder level is required`);
-    }
+    const missing = [];
+    const num = (val) => !isNaN(val) && val !== "";
 
-    return errors;
+    if (!row.name?.trim()) missing.push("Product name");
+    if (!row.category?.trim()) missing.push("Category");
+    if (!num(row.price)) missing.push("Price");
+    if (!num(row.stock)) missing.push("Stock");
+    if (!num(row.low_stock_threshold)) missing.push("low_stock_threshold");
+
+    return missing.length
+      ? [`Row ${index + 2}: Missing/invalid ${missing.join(", ")}`]
+      : [];
   };
 
   const handleFile = (uploadedFile) => {
     if (!uploadedFile) return;
 
-    if (!uploadedFile.name.endsWith('.csv')) {
-      setErrors(['Please upload a valid CSV file']);
+    if (!uploadedFile.name.endsWith(".csv")) {
+      setErrors(["Please upload a valid CSV file"]);
       return;
     }
 
@@ -146,7 +139,25 @@ const BulkUpload = () => {
     setUploading(false);
   };
 
-  const handleImport = () => {
+  const handleImport = async () => {
+    if (parsedData.length === 0) {
+      toast.error("No valid products to upload");
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const res = await bulkUpload({ products: parsedData });
+      console.log(res);
+      toast.success(res?.message || "Products uploaded successfully");
+      handleReset();
+    } catch (error) {
+      console.error("Bulk upload error: ", error);
+      toast.error(error.response?.data?.message || "Bulk upload failed");
+    } finally {
+      setUploading(false);
+    }
+
     // Here you would send the data to your backend
     console.log("Importing products:", parsedData);
     alert(`Successfully imported ${parsedData.length} products!`);
@@ -157,22 +168,20 @@ const BulkUpload = () => {
     const template = [
       {
         name: "Laptop",
-        sku: "LAP-001",
         category: "Electronics",
         price: 1299.99,
         stock: 50,
         reorderLevel: 10,
-        image: "💻",
+        unit: "piece",
         description: "High-performance laptop",
       },
       {
         name: "Wireless Mouse",
-        sku: "MOU-001",
         category: "Accessories",
         price: 29.99,
         stock: 150,
         reorderLevel: 30,
-        image: "🖱️",
+        unit: "piece",
         description: "Ergonomic wireless mouse",
       },
     ];
@@ -235,9 +244,7 @@ const BulkUpload = () => {
           <div className="flex items-start gap-4">
             <div
               className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                isDark
-                  ? "bg-blue-500/20"
-                  : "bg-blue-500/10"
+                isDark ? "bg-blue-500/20" : "bg-blue-500/10"
               }`}
             >
               <Info className="h-6 w-6 text-blue-500" />
@@ -256,9 +263,14 @@ const BulkUpload = () => {
                 }`}
               >
                 <li>• Download the CSV template to see the required format</li>
-                <li>• Fill in your product data (name, SKU, category, price, stock, reorder level)</li>
+                <li>
+                  • Fill in your product data (name, SKU, category, price,
+                  stock, reorder level)
+                </li>
                 <li>• Upload the completed CSV file below</li>
-                <li>• Review the validation results and import your products</li>
+                <li>
+                  • Review the validation results and import your products
+                </li>
               </ul>
             </div>
           </div>
@@ -276,9 +288,7 @@ const BulkUpload = () => {
         <CardHeader>
           <CardTitle
             className={`flex items-center gap-2 bg-gradient-to-r ${
-              isDark
-                ? "from-white to-gray-400"
-                : "from-gray-900 to-gray-600"
+              isDark ? "from-white to-gray-400" : "from-gray-900 to-gray-600"
             } bg-clip-text text-transparent`}
           >
             <Upload className="h-5 w-5 text-violet-500" />
@@ -314,9 +324,7 @@ const BulkUpload = () => {
               <div className="flex flex-col items-center justify-center text-center">
                 <div
                   className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-6 ${
-                    isDark
-                      ? "bg-violet-500/20"
-                      : "bg-violet-500/10"
+                    isDark ? "bg-violet-500/20" : "bg-violet-500/10"
                   }`}
                 >
                   <FileSpreadsheet className="h-10 w-10 text-violet-500" />
@@ -395,7 +403,9 @@ const BulkUpload = () => {
                     onClick={handleReset}
                     variant="ghost"
                     size="icon"
-                    className={isDark ? "hover:bg-gray-700" : "hover:bg-gray-200"}
+                    className={
+                      isDark ? "hover:bg-gray-700" : "hover:bg-gray-200"
+                    }
                   >
                     <X className="h-5 w-5" />
                   </Button>
@@ -579,9 +589,7 @@ const BulkUpload = () => {
                       <Package className="h-5 w-5 text-violet-500" />
                       Preview Valid Products
                     </CardTitle>
-                    <CardDescription>
-                      Showing first 5 products
-                    </CardDescription>
+                    <CardDescription>Showing first 5 products</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
@@ -596,7 +604,9 @@ const BulkUpload = () => {
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <div className="text-2xl">{product.image || "📦"}</div>
+                              <div className="text-2xl">
+                                {product.image || "📦"}
+                              </div>
                               <div>
                                 <p
                                   className={`font-semibold ${
@@ -617,7 +627,9 @@ const BulkUpload = () => {
                             <div className="text-right">
                               <p
                                 className={`font-bold ${
-                                  isDark ? "text-emerald-400" : "text-emerald-600"
+                                  isDark
+                                    ? "text-emerald-400"
+                                    : "text-emerald-600"
                                 }`}
                               >
                                 ${product.price}
