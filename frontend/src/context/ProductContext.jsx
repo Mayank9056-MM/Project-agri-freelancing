@@ -3,6 +3,7 @@ import {
   createProductApi,
   deleteProductApi,
   getAllProductApi,
+  getLowStockProductsApi,
   getProductBySkuApi,
   updateProductApi,
 } from "@/services/productService";
@@ -15,6 +16,7 @@ export const ProductContext = createContext();
 export const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  
   /**
    * Retrieves all products from the database.
    *
@@ -31,6 +33,13 @@ export const ProductProvider = ({ children }) => {
       .finally(() => setLoading(false));
   };
 
+  /**
+   * Creates a new product in the database.
+   *
+   * @param {object} data - The data to send with the request. Must be a FormData object.
+   * @returns {Promise<void>} A promise that resolves when the product has been created.
+   * @throws {Error} - if something goes wrong while creating the product
+   */
   const createProduct = async (data) => {
     setLoading(true);
     await createProductApi(data)
@@ -44,7 +53,15 @@ export const ProductProvider = ({ children }) => {
       .finally(() => setLoading(false));
   };
 
-  // ✏️ Update
+ 
+  /**
+   * Updates a product in the database.
+   *
+   * @param {string} id - The ID of the product to update.
+   * @param {object} data - The data to send with the request. Must be a FormData object.
+   * @returns {Promise<void>} A promise that resolves when the product has been updated.
+   * @throws {Error} - if something goes wrong while updating the product
+   */
   const updateProduct = async (id, data) => {
     setLoading(true);
     try {
@@ -59,7 +76,15 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
-  // ❌ Delete
+  
+/**
+ * Deletes a product from the database by ID.
+ *
+ * @param {string} id - The ID of the product to delete.
+ *
+ * @returns {Promise<void>} A promise that resolves when the product has been deleted.
+ * @throws {Error} - if something goes wrong while deleting the product
+ */
   const deleteProduct = async (id) => {
     setLoading(true);
     try {
@@ -74,6 +99,13 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
+/**
+ * Retrieves a product from the database by SKU.
+ *
+ * @param {string} sku - The SKU of the product to retrieve.
+ * @returns {Promise<object>} A promise that resolves with the product object.
+ * @throws {Error} - if something goes wrong while fetching the product
+ */
   const getProductBySku = async (sku) => {
     setLoading(true);
     try {
@@ -88,6 +120,19 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
+/**
+ * Bulk uploads products to the database.
+ *
+ * @param {object[]} data - An array of objects containing the following:
+ *   - sku: The SKU of the product.
+ *   - name: The name of the product.
+ *   - price: The price of the product.
+ *   - quantity: The quantity of the product in stock.
+ *   - description: The description of the product.
+ *   - image: The image of the product.
+ * @returns {Promise<object>} A promise that resolves with an object containing the IDs of the created products.
+ * @throws {Error} - if something goes wrong while bulk uploading products
+ */
   const bulkUpload = async (data) => {
     setLoading(true);
     try {
@@ -100,6 +145,20 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
+  const getLowStockProducts = async() => {
+    setLoading(true)
+    try {
+      const res = await getLowStockProductsApi();
+      console.log(res)
+      return res;
+
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const value = {
     getAllProducts,
     products,
@@ -109,7 +168,8 @@ export const ProductProvider = ({ children }) => {
     deleteProduct,
     loading,
     getProductBySku,
-    bulkUpload
+    bulkUpload,
+    getLowStockProducts
   };
 
   return (
