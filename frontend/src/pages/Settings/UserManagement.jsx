@@ -43,99 +43,11 @@ const UserManagement = () => {
   useEffect(() => {
     getAllUsers()
       .then((data) => {
-        console.log(data)
+        console.log(data);
         setCashiers(data);
       })
       .catch((err) => console.log(err));
   }, []);
-
-  // // Mock data - replace with actual API data
-  // const cashiers = [
-  //   {
-  //     id: 1,
-  //     name: "Sarah Johnson",
-  //     email: "sarah.johnson@store.com",
-  //     phone: "+1 (555) 123-4567",
-  //     role: "Senior Cashier",
-  //     status: "active",
-  //     avatar: "SJ",
-  //     joinDate: "2023-01-15",
-  //     totalSales: 1245,
-  //     revenue: 156780,
-  //     lastActive: "2 mins ago",
-  //     permissions: ["sales", "returns", "reports"],
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Michael Chen",
-  //     email: "michael.chen@store.com",
-  //     phone: "+1 (555) 234-5678",
-  //     role: "Cashier",
-  //     status: "active",
-  //     avatar: "MC",
-  //     joinDate: "2023-03-22",
-  //     totalSales: 892,
-  //     revenue: 98340,
-  //     lastActive: "15 mins ago",
-  //     permissions: ["sales", "returns"],
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Emily Rodriguez",
-  //     email: "emily.rodriguez@store.com",
-  //     phone: "+1 (555) 345-6789",
-  //     role: "Cashier",
-  //     status: "inactive",
-  //     avatar: "ER",
-  //     joinDate: "2023-05-10",
-  //     totalSales: 567,
-  //     revenue: 67890,
-  //     lastActive: "2 days ago",
-  //     permissions: ["sales"],
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "David Park",
-  //     email: "david.park@store.com",
-  //     phone: "+1 (555) 456-7890",
-  //     role: "Senior Cashier",
-  //     status: "active",
-  //     avatar: "DP",
-  //     joinDate: "2022-11-05",
-  //     totalSales: 1567,
-  //     revenue: 203450,
-  //     lastActive: "1 hour ago",
-  //     permissions: ["sales", "returns", "reports", "inventory"],
-  //   },
-  //   {
-  //     id: 5,
-  //     name: "Jessica Williams",
-  //     email: "jessica.williams@store.com",
-  //     phone: "+1 (555) 567-8901",
-  //     role: "Cashier",
-  //     status: "active",
-  //     avatar: "JW",
-  //     joinDate: "2023-07-18",
-  //     totalSales: 423,
-  //     revenue: 54320,
-  //     lastActive: "30 mins ago",
-  //     permissions: ["sales", "returns"],
-  //   },
-  //   {
-  //     id: 6,
-  //     name: "Robert Taylor",
-  //     email: "robert.taylor@store.com",
-  //     phone: "+1 (555) 678-9012",
-  //     role: "Cashier",
-  //     status: "suspended",
-  //     avatar: "RT",
-  //     joinDate: "2023-02-28",
-  //     totalSales: 234,
-  //     revenue: 28900,
-  //     lastActive: "1 week ago",
-  //     permissions: ["sales"],
-  //   },
-  // ];
 
   const stats = [
     {
@@ -172,7 +84,9 @@ const UserManagement = () => {
     },
     {
       title: "Pending Issues",
-      value: cashiers?.filter((c) => c.status === "suspended")?.length?.toString(),
+      value: cashiers
+        ?.filter((c) => c.status === "suspended")
+        ?.length?.toString(),
       icon: Shield,
       change: "Action Required",
       subtext: "Needs attention",
@@ -416,7 +330,19 @@ const UserManagement = () => {
                     <div
                       className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${avatarGradient} flex items-center justify-center text-white font-bold text-xl shadow-lg`}
                     >
-                      {cashier.avatar}
+                      {cashier.image ? (
+                        <img
+                          src={cashier.image}
+                          alt={cashier.fullName || "User"}
+                          className="w-full h-full object-cover rounded-2xl"
+                        />
+                      ) : (
+                        <div
+                          className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${avatarGradient} text-white font-bold text-xl`}
+                        >
+                          {cashier.fullName?.charAt(0).toUpperCase()}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <h3
