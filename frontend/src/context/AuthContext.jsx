@@ -1,4 +1,5 @@
 import {
+  getAllUsersApi,
   getCurrentUserApi,
   loginApi,
   logoutApi,
@@ -10,11 +11,26 @@ import { createContext, useState, useEffect } from "react";
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext();
 
+/**
+ * Provides the authentication context to the application.
+ * It fetches the current user from local storage or the API on mount and sets the user state accordingly.
+ * It also provides the login, logout, and register functions to manipulate the user state.
+ * The context value includes the user state, a setter for the user state, the login function, the logout function, the register function, and a boolean indicating whether the user is authenticated.
+ * The context value is updated whenever the user state changes.
+ */
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    /**
+     * Fetches the current user from local storage or the API.
+     * If the user is found in local storage, it is parsed and set as the current user.
+     * If the user is not found in local storage, the API is called to retrieve the current user.
+     * If the API call is successful, the current user is set and stored in local storage.
+     * If the API call fails, the current user is set to null and the user is removed from local storage.
+     * Finally, the loading state is set to false.
+     */
     const fetchUser = async () => {
       try {
         const savedUser = localStorage.getItem("user");
@@ -46,6 +62,14 @@ export const AuthProvider = ({ children }) => {
     console.log("Updated user:", user);
   }, [user]);
 
+  /**
+   * Logs in a user to the application.
+   *
+   * @param {object} credentials - An object containing the following:
+   *   - email: The email address of the user.
+   *   - password: The password of the user.
+   * @returns {Promise<object>} A promise that resolves with the user data if the login is successful.
+   */
   const login = async (credentials) => {
     const res = await loginApi(credentials);
     const userData = res.data;
@@ -55,6 +79,17 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
+  /**
+   * Registers a new user to the application.
+   *
+   * @param {object} credentials - An object containing the following:
+   *   - email: The email address of the user.
+   *   - password: The password of the user.
+   *   - name: The name of the user.
+   *   - role: The role of the user (defaults to "admin").
+   * @returns {Promise<object>} A promise that resolves with the registered user data.
+   * @throws {Error} - if something goes wrong while registering the user
+   */
   const register = async (credentials) => {
     console.log(credentials);
     const res = await registerApi(credentials);
@@ -64,12 +99,26 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
+  /**
+   * Logs out the current user and removes their credentials from local storage.
+   *
+   * @returns {Promise<void>} A promise that resolves when the user has been logged out.
+   */
   const logout = async () => {
     try {
       await logoutApi();
     } finally {
       localStorage.removeItem("user");
       setUser(null);
+    }
+  };
+
+  const getAllUsers = async () => {
+    try {
+      const data = await getAllUsersApi();
+      return data.users;
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -81,6 +130,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     isAuthenticated: !!user,
     register,
+    getAllUsers,
   };
 
   return (

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Package,
   ShoppingCart,
@@ -31,113 +31,154 @@ import {
 } from "recharts";
 import { ThemeContext } from "@/context/ThemeContext";
 import { AuthContext } from "@/context/AuthContext";
+import { SaleContext } from "@/context/SaleContext";
+import { ProductContext } from "@/context/ProductContext";
 
 const Dashboard = () => {
   const { theme } = useContext(ThemeContext);
   const isDark = theme === "dark";
-  const {user} = useContext(AuthContext)
+  const { user } = useContext(AuthContext);
 
-  const salesData = [
-    { date: "01 Nov", revenue: 4200, orders: 28, items: 156 },
-    { date: "02 Nov", revenue: 3800, orders: 24, items: 142 },
-    { date: "03 Nov", revenue: 5200, orders: 35, items: 198 },
-    { date: "04 Nov", revenue: 4800, orders: 31, items: 175 },
-    { date: "05 Nov", revenue: 6200, orders: 42, items: 224 },
-    { date: "06 Nov", revenue: 5800, orders: 38, items: 205 },
-    { date: "07 Nov", revenue: 7200, orders: 48, items: 267 },
-  ];
+  const { getAllSales } = useContext(SaleContext);
+  const { getAllProducts, getLowStockProducts } = useContext(ProductContext);
 
-  const topProducts = [
-    { name: "Laptop", sold: 45, revenue: 58350 },
-    { name: "Smartphone", sold: 78, revenue: 46800 },
-    { name: "Headphones", sold: 124, revenue: 24800 },
-    { name: "Mouse", sold: 156, revenue: 4680 },
-    { name: "Keyboard", sold: 98, revenue: 7350 },
-  ];
+  const [sales, setSales] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [lowStock, setLowStock] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const stockStatus = [
-    { name: "In Stock", value: 240, color: "#10b981" },
-    { name: "Low Stock", value: 45, color: "#f59e0b" },
-    { name: "Out of Stock", value: 12, color: "#ef4444" },
-  ];
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [salesRes, productsRes, lowRes] = await Promise.all([
+          getAllSales(),
+          getAllProducts(),
+          getLowStockProducts(),
+        ]);
 
-  const recentSales = [
-    {
-      id: "INV-001",
-      customer: "John Doe",
-      items: 3,
-      amount: 1299,
-      payment: "UPI",
-      time: "2 mins ago",
-      status: "Completed",
-    },
-    {
-      id: "INV-002",
-      customer: "Jane Smith",
-      items: 5,
-      amount: 2499,
-      payment: "Cash",
-      time: "15 mins ago",
-      status: "Completed",
-    },
-    {
-      id: "INV-003",
-      customer: "Bob Wilson",
-      items: 2,
-      amount: 599,
-      payment: "UPI",
-      time: "1 hour ago",
-      status: "Completed",
-    },
-    {
-      id: "INV-004",
-      customer: "Alice Brown",
-      items: 4,
-      amount: 1899,
-      payment: "Cash",
-      time: "2 hours ago",
-      status: "Completed",
-    },
-  ];
+        setSales(salesRes || []);
+        setProducts(productsRes.products || productsRes || []);
+        setLowStock(lowRes.products || []);
+      } catch (err) {
+        console.error("Dashboard data error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboardData();
+  }, []);
+
+  const salesData = (() => {
+    const daily = {};
+
+    sales.forEach((s) => {
+      const date = new Date(s.createdAt).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+      const total = s.total || 0;
+      daily[date] = (daily[date] || 0) + total;
+    });
+
+    // Format for Recharts
+    return Object.entries(daily).map(([date, revenue]) => ({
+      date,
+      revenue,
+      orders: sales.filter(
+        (s) =>
+          new Date(s.createdAt).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          }) === date
+      ).length,
+    }));
+  })();
+
+  const totalRevenue = sales.reduce((sum, s) => sum + (s.total || 0), 0);
+  const totalOrders = sales.length;
+  const totalProducts = products.length;
+  const totalLowStock = lowStock.length;
+
+  // --- Compute top selling products ---
+const productSalesMap = {};
+
+sales.forEach((sale) => {
+  sale.items?.forEach((item) => {
+    const id = item.product?._id || item.product; // handle populated or ID
+    if (!productSalesMap[id]) {
+      productSalesMap[id] = {
+        name: item.product?.name || "Unknown Product",
+        sold: 0,
+        revenue: 0,
+      };
+    }
+    productSalesMap[id].sold += item.quantity || 0;
+    productSalesMap[id].revenue += (item.quantity || 0) * (item.price || 0);
+  });
+});
+
+const topProducts = Object.values(productSalesMap)
+  .sort((a, b) => b.sold - a.sold)
+  .slice(0, 5);
+
 
   const stats = [
     {
-      title: "Today's Revenue",
-      value: "$7,245",
+      title: "Total Revenue",
+      value: ` ₹${totalRevenue.toLocaleString()}`,
       icon: DollarSign,
       change: "+18.2%",
-      subtext: "48 orders",
+      subtext: `${totalOrders} orders`,
       gradient: "from-violet-500 to-purple-600",
       iconBg: "from-violet-500/20 to-purple-600/20",
     },
     {
       title: "Total Sales",
-      value: "267",
+      value: totalOrders.toString(),
       icon: ShoppingCart,
       change: "+12.5%",
-      subtext: "Items sold",
+      subtext: "Orders processed",
       gradient: "from-blue-500 to-cyan-600",
       iconBg: "from-blue-500/20 to-cyan-600/20",
     },
     {
       title: "Products",
-      value: "297",
+      value: totalProducts.toString(),
       icon: Package,
       change: "+5.3%",
-      subtext: "240 in stock",
+      subtext: `${totalProducts - totalLowStock} in stock`,
       gradient: "from-emerald-500 to-green-600",
       iconBg: "from-emerald-500/20 to-green-600/20",
     },
     {
       title: "Low Stock",
-      value: "12",
+      value: totalLowStock.toString(),
       icon: AlertCircle,
-      change: "Critical",
-      subtext: "Needs restock",
+      change: totalLowStock > 0 ? "Critical" : "Healthy",
+      subtext: "Inventory status",
       gradient: "from-rose-500 to-red-600",
       iconBg: "from-rose-500/20 to-red-600/20",
     },
   ];
+
+  const outOfStockCount = products.filter((p) => p.stock === 0).length;
+  const lowStockCount = lowStock.length;
+  const inStockCount = totalProducts - lowStockCount - outOfStockCount;
+
+  const stockStatus = [
+    { name: "In Stock", value: inStockCount, color: "#10b981" },
+    { name: "Low Stock", value: lowStockCount, color: "#f59e0b" },
+    { name: "Out of Stock", value: outOfStockCount, color: "#ef4444" },
+  ];
+
+  const recentSales = sales.slice(0, 5).map((s) => ({
+    id: s.saleId,
+    customer: s.createdBy?.email || "Guest",
+    items: s.items?.length || 0,
+    amount: s.total,
+    payment: s.paymentMethod,
+    time: new Date(s.createdAt).toLocaleTimeString(),
+  }));
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
@@ -177,6 +218,23 @@ const Dashboard = () => {
     }
     return null;
   };
+
+  if (loading) {
+  return (
+    <div className="flex items-center justify-center h-[70vh] text-gray-500">
+      Loading dashboard data...
+    </div>
+  );
+}
+
+if (!sales.length && !products.length) {
+  return (
+    <div className="flex flex-col items-center justify-center h-[70vh] text-gray-500">
+      <AlertCircle className="w-8 h-8 mb-3 text-gray-400" />
+      <p>No sales or products data available yet.</p>
+    </div>
+  );
+}
 
   return (
     <div className="space-y-6">
@@ -295,9 +353,7 @@ const Dashboard = () => {
           <CardHeader>
             <CardTitle
               className={`flex items-center justify-between bg-gradient-to-r ${
-                isDark
-                  ? "from-white to-gray-400"
-                  : "from-gray-900 to-gray-600"
+                isDark ? "from-white to-gray-400" : "from-gray-900 to-gray-600"
               } bg-clip-text text-transparent`}
             >
               <span>Revenue Trends</span>
@@ -317,41 +373,13 @@ const Dashboard = () => {
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={salesData}>
                 <defs>
-                  <linearGradient
-                    id="colorRevenue"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="5%"
-                      stopColor="#8b5cf6"
-                      stopOpacity={0.9}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="#8b5cf6"
-                      stopOpacity={0.1}
-                    />
+                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.9} />
+                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1} />
                   </linearGradient>
-                  <linearGradient
-                    id="colorOrders"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="5%"
-                      stopColor="#10b981"
-                      stopOpacity={0.9}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="#10b981"
-                      stopOpacity={0.1}
-                    />
+                  <linearGradient id="colorOrders" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.9} />
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.1} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
@@ -359,10 +387,7 @@ const Dashboard = () => {
                   stroke={isDark ? "#374151" : "#e5e7eb"}
                   opacity={0.3}
                 />
-                <XAxis
-                  dataKey="date"
-                  stroke={isDark ? "#9ca3af" : "#6b7280"}
-                />
+                <XAxis dataKey="date" stroke={isDark ? "#9ca3af" : "#6b7280"} />
                 <YAxis stroke={isDark ? "#9ca3af" : "#6b7280"} />
                 <Tooltip content={<CustomTooltip />} />
                 <Area
@@ -396,16 +421,12 @@ const Dashboard = () => {
           <CardHeader>
             <CardTitle
               className={`bg-gradient-to-r ${
-                isDark
-                  ? "from-white to-gray-400"
-                  : "from-gray-900 to-gray-600"
+                isDark ? "from-white to-gray-400" : "from-gray-900 to-gray-600"
               } bg-clip-text text-transparent`}
             >
               Stock Status
             </CardTitle>
-            <CardDescription>
-              Current inventory overview
-            </CardDescription>
+            <CardDescription>Current inventory overview</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={240}>
@@ -471,9 +492,7 @@ const Dashboard = () => {
           <CardHeader>
             <CardTitle
               className={`bg-gradient-to-r ${
-                isDark
-                  ? "from-white to-gray-400"
-                  : "from-gray-900 to-gray-600"
+                isDark ? "from-white to-gray-400" : "from-gray-900 to-gray-600"
               } bg-clip-text text-transparent`}
             >
               Top Selling Products
@@ -514,22 +533,22 @@ const Dashboard = () => {
                     >
                       {product.name}
                     </p>
-                    <p
+                    {/* <p
                       className={`text-sm ${
                         isDark ? "text-gray-400" : "text-gray-600"
                       }`}
                     >
                       {product.sold} units sold
-                    </p>
+                    </p> */}
                   </div>
                   <div className="text-right">
-                    <p
+                    {/* <p
                       className={`font-bold ${
                         isDark ? "text-emerald-400" : "text-emerald-600"
                       }`}
                     >
                       ${product.revenue.toLocaleString()}
-                    </p>
+                    </p> */}
                   </div>
                 </div>
               ))}
@@ -547,9 +566,7 @@ const Dashboard = () => {
           <CardHeader>
             <CardTitle
               className={`bg-gradient-to-r ${
-                isDark
-                  ? "from-white to-gray-400"
-                  : "from-gray-900 to-gray-600"
+                isDark ? "from-white to-gray-400" : "from-gray-900 to-gray-600"
               } bg-clip-text text-transparent`}
             >
               Recent Sales

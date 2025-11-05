@@ -19,7 +19,7 @@ const generateAccessToken = async (userId) => {
 };
 
 // main functions
-export const registerUser = async (req, res, next) => {
+export const registerUser = async (req, res) => {
   try {
     const { fullName, email, password } = req.body;
 
@@ -80,7 +80,7 @@ export const registerUser = async (req, res, next) => {
   }
 };
 
-export const loginUser = async (req, res, next) => {
+export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -119,7 +119,7 @@ export const loginUser = async (req, res, next) => {
   }
 };
 
-export const logoutUser = async (req, res, next) => {
+export const logoutUser = async (req, res) => {
   try {
     const options = {
       secure: process.env.NODE_ENV === "production",
@@ -137,7 +137,7 @@ export const logoutUser = async (req, res, next) => {
   }
 };
 
-export const currentUser = async (req, res, next) => {
+export const currentUser = async (req, res) => {
   return res.status(200).json({
     success: true,
     user: req.user,
@@ -145,7 +145,7 @@ export const currentUser = async (req, res, next) => {
   });
 };
 
-export const updateUserAvatar = async (req, res, next) => {
+export const updateUserAvatar = async (req, res) => {
   const avatarLocalFilePath = req?.file.path;
 
   if (!avatarLocalFilePath) {
@@ -172,11 +172,34 @@ export const updateUserAvatar = async (req, res, next) => {
     throw new Error("something went wrong while updating avatar");
   }
 
-  return res
-    .status(200)
-    .json({
+  return res.status(200).json({
+    success: true,
+    user: updatedUser,
+    message: "user avatar updated successfully",
+  });
+};
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const allUsers = await User.find({ role: { $ne: "admin" } })
+      .select("-password")
+      .sort({ createdAt: -1 });
+    console.log(allUsers);
+
+    if (!allUsers) {
+      throw new Error("something went wrong while fetching users");
+    }
+
+    return res.status(200).json({
       success: true,
-      user: updatedUser,
-      message: "user avatar updated successfully",
+      users: allUsers,
+      message: "users fetched successfully",
     });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch users",
+    });
+  }
 };
