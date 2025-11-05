@@ -89,7 +89,7 @@ export const updateAvatarApi = async (avatar) => {
  */
 export const getAllUsersApi = async () => {
   try {
-    const res = await api.get("users/get");
+    const res = await api.get("user/get");
     console.log(res);
     return res.data;
   } catch (error) {
