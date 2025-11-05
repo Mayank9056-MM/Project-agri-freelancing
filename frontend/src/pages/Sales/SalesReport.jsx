@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   FileText,
   Calendar,
@@ -21,103 +21,53 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ThemeContext } from "@/context/ThemeContext";
+import { SaleContext } from "@/context/SaleContext";
 
 const SalesReport = () => {
   const { theme } = useContext(ThemeContext);
   const isDark = theme === "dark";
-  
+  const { getAllSales } = useContext(SaleContext);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSale, setSelectedSale] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [dateRange, setDateRange] = useState("today");
   const [paymentFilter, setPaymentFilter] = useState("all");
+  const [salesData, setSalesData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock sales data matching your schema
-  const salesData = [
-    {
-      saleId: "SALE-2024-001",
-      items: [
-        { sku: "LAP-001", name: "Gaming Laptop", qty: 1, price: 1299, subtotal: 1299 },
-        { sku: "MOU-001", name: "Wireless Mouse", qty: 2, price: 29, subtotal: 58 },
-      ],
-      total: 1357,
-      paymentMethod: "upi",
-      paymentStatus: "paid",
-      createdBy: { name: "John Smith" },
-      createdAt: "2024-11-03T10:30:00Z",
-    },
-    {
-      saleId: "SALE-2024-002",
-      items: [
-        { sku: "PHN-001", name: "Smartphone Pro", qty: 1, price: 899, subtotal: 899 },
-        { sku: "CAS-001", name: "Phone Case", qty: 1, price: 25, subtotal: 25 },
-      ],
-      total: 924,
-      paymentMethod: "cash",
-      paymentStatus: "paid",
-      createdBy: { name: "Sarah Johnson" },
-      createdAt: "2024-11-03T09:15:00Z",
-    },
-    {
-      saleId: "SALE-2024-003",
-      items: [
-        { sku: "HDP-001", name: "Wireless Headphones", qty: 3, price: 199, subtotal: 597 },
-      ],
-      total: 597,
-      paymentMethod: "card",
-      paymentStatus: "paid",
-      createdBy: { name: "Mike Davis" },
-      createdAt: "2024-11-03T08:45:00Z",
-    },
-    {
-      saleId: "SALE-2024-004",
-      items: [
-        { sku: "KEY-001", name: "Mechanical Keyboard", qty: 2, price: 149, subtotal: 298 },
-        { sku: "MOU-002", name: "Gaming Mouse", qty: 2, price: 79, subtotal: 158 },
-      ],
-      total: 456,
-      paymentMethod: "upi",
-      paymentStatus: "paid",
-      createdBy: { name: "Emily Brown" },
-      createdAt: "2024-11-02T16:20:00Z",
-    },
-    {
-      saleId: "SALE-2024-005",
-      items: [
-        { sku: "TAB-001", name: "Tablet", qty: 1, price: 549, subtotal: 549 },
-      ],
-      total: 549,
-      paymentMethod: "bank",
-      paymentStatus: "pending",
-      createdBy: { name: "David Wilson" },
-      createdAt: "2024-11-02T14:10:00Z",
-    },
-    {
-      saleId: "SALE-2024-006",
-      items: [
-        { sku: "MON-001", name: "4K Monitor", qty: 1, price: 399, subtotal: 399 },
-        { sku: "CAB-001", name: "HDMI Cable", qty: 2, price: 15, subtotal: 30 },
-      ],
-      total: 429,
-      paymentMethod: "cash",
-      paymentStatus: "paid",
-      createdBy: { name: "Lisa Anderson" },
-      createdAt: "2024-11-01T11:30:00Z",
-    },
-  ];
+  // 🧠 Fetch sales from backend
+  useEffect(() => {
+    const fetchSales = async () => {
+      try {
+        const sales = await getAllSales();
+        console.log(sales)
+        setSalesData(sales || []);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load sales data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSales();
+  }, [getAllSales]);
 
   // Calculate statistics
   const totalRevenue = salesData.reduce((sum, sale) => sum + sale.total, 0);
   const totalSales = salesData.length;
-  const totalItems = salesData.reduce((sum, sale) => 
-    sum + sale.items.reduce((itemSum, item) => itemSum + item.qty, 0), 0
+  const totalItems = salesData.reduce(
+    (sum, sale) =>
+      sum + sale.items.reduce((itemSum, item) => itemSum + item.qty, 0),
+    0
   );
   const avgOrderValue = totalRevenue / totalSales;
 
   const stats = [
     {
       title: "Total Revenue",
-      value: `$${totalRevenue.toLocaleString()}`,
+      value: `₹${totalRevenue.toLocaleString()}`,
       icon: DollarSign,
       change: "+24.5%",
       gradient: "from-violet-500 to-purple-600",
@@ -141,7 +91,7 @@ const SalesReport = () => {
     },
     {
       title: "Avg Order Value",
-      value: `$${Math.round(avgOrderValue)}`,
+      value: `₹${Math.round(avgOrderValue)}`,
       icon: TrendingUp,
       change: "+8.4%",
       gradient: "from-orange-500 to-red-600",
@@ -183,6 +133,16 @@ const SalesReport = () => {
       paymentFilter === "all" || sale.paymentMethod === paymentFilter;
     return matchesSearch && matchesPayment;
   });
+
+  if (loading)
+    return (
+      <div className="text-center py-10 text-gray-500">
+        Loading sales data...
+      </div>
+    );
+
+  if (error)
+    return <div className="text-center py-10 text-red-500">{error}</div>;
 
   return (
     <div className="space-y-6">
@@ -570,7 +530,9 @@ const SalesReport = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => setSelectedSale(sale)}
-                        className={isDark ? "hover:bg-gray-800" : "hover:bg-gray-100"}
+                        className={
+                          isDark ? "hover:bg-gray-800" : "hover:bg-gray-100"
+                        }
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
