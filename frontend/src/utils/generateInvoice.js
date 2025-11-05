@@ -1,5 +1,5 @@
-import jsPDF from "jspdf";
-import "jspdf-autotable";
+import { jsPDF } from "jspdf"; // ✅ Correct named import (not default)
+import autoTable from "jspdf-autotable"; // ✅ Direct function import
 
 export const generateInvoice = (saleData) => {
   const {
@@ -13,31 +13,37 @@ export const generateInvoice = (saleData) => {
     customerName = "Guest",
   } = saleData;
 
-  const doc = new jsPDF();
+  // ✅ Create jsPDF instance correctly
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
 
   // ===== Header =====
   doc.setFontSize(20);
   doc.setTextColor(40, 116, 240);
   doc.text("StockFlow", 14, 20);
+
   doc.setFontSize(10);
   doc.setTextColor(100);
   doc.text("Inventory & Billing System", 14, 26);
 
   doc.setFontSize(12);
-  doc.text(`Sale ID: ${saleId}`, 150, 20);
-  doc.text(`Date: ${new Date().toLocaleString()}`, 150, 26);
-  doc.text(`Customer: ${customerName}`, 150, 32);
+  doc.text(`Sale ID: ${saleId}`, 150, 20, { align: "right" });
+  doc.text(`Date: ${new Date().toLocaleString()}`, 150, 26, { align: "right" });
+  doc.text(`Customer: ${customerName}`, 150, 32, { align: "right" });
 
   // ===== Table =====
   const tableData = items.map((item, index) => [
     index + 1,
     item.name,
     item.qty,
-    `$${item.price.toFixed(2)}`,
-    `$${(item.price * item.qty).toFixed(2)}`,
+    `₹${item.price.toFixed(2)}`,
+    `₹${(item.price * item.qty).toFixed(2)}`,
   ]);
 
-  doc.autoTable({
+  autoTable(doc, {
     startY: 40,
     head: [["#", "Item", "Qty", "Price", "Subtotal"]],
     body: tableData,
@@ -54,17 +60,17 @@ export const generateInvoice = (saleData) => {
   doc.setFontSize(10);
 
   const summary = [
-    ["Subtotal", `$${subtotal.toFixed(2)}`],
+    ["Subtotal", `₹${subtotal.toFixed(2)}`],
     ["Discount", `-${discount}%`],
-    ["Tax (18%)", `$${tax.toFixed(2)}`],
-    ["Total", `$${total.toFixed(2)}`],
+    ["Tax (18%)", `₹${tax.toFixed(2)}`],
+    ["Total", `₹${total.toFixed(2)}`],
     ["Payment Method", paymentMethod.toUpperCase()],
   ];
 
   summary.forEach(([label, value], i) => {
     const posY = y + 6 + i * 6;
     doc.text(label, 14, posY);
-    doc.text(value, 180, posY, { align: "right" });
+    doc.text(value, 190, posY, { align: "right" });
   });
 
   // ===== Footer =====

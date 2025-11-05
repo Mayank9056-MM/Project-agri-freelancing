@@ -36,11 +36,7 @@ const POSPage = () => {
   const { theme } = useContext(ThemeContext);
   const isDark = theme === "dark";
 
-  const [cart, setCart] = useState([
-    { id: 1, name: "Wireless Mouse", price: 29.99, quantity: 2, sku: "WM-001" },
-    { id: 2, name: "USB-C Cable", price: 12.99, quantity: 1, sku: "UC-045" },
-    { id: 3, name: "Laptop Stand", price: 45.0, quantity: 1, sku: "LS-203" },
-  ]);
+  const [cart, setCart] = useState([]);
 
   const [discount, setDiscount] = useState(0);
   const [customerName, setCustomerName] = useState("");
@@ -54,20 +50,35 @@ const POSPage = () => {
   const tax = (subtotal - discountAmount) * 0.18; // 18% tax
   const total = subtotal - discountAmount + tax;
 
+  useEffect(() => {
+    const savedCart = localStorage.getItem("pos_cart");
+    if (savedCart) setCart(JSON.parse(savedCart));
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("pos_cart", JSON.stringify(cart));
+  }, [cart]);
+
   const updateQuantity = (id, change) => {
-    setCart(
-      cart.map((item) =>
+    setCart((prevCart) =>
+      prevCart.map((item) =>
         item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity + change) }
+          ? {
+              ...item,
+              quantity: Math.max(
+                1,
+                Math.min(item.quantity + change, item.stock)
+              ),
+            }
           : item
       )
     );
   };
 
   const removeItem = (id) => {
-    setCart(cart.filter((item) => item.id !== id));
+    setCart((prev) => prev.filter((item) => item.id !== id));
+    toast.success("Item removed");
   };
-
   const clearCart = () => {
     setCart([]);
     setDiscount(0);
@@ -104,6 +115,7 @@ const POSPage = () => {
 
       // Call API through context
       const res = await createSale(payload);
+      console.log(res);
 
       toast.success(`Sale successful! Sale ID: ${res.saleId}`);
 
@@ -131,30 +143,40 @@ const POSPage = () => {
 
   const quickDiscounts = [5, 10, 15, 20];
 
-  const addToCart = (product) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.sku === product.sku);
-      if (existing) {
-        // Update quantity if already in cart
-        return prev.map((item) =>
-          item.sku === product.sku
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
+const addToCart = (product) => {
+  setCart((prevCart) => {
+    const existingItem = prevCart.find((item) => item.sku === product.sku);
+
+    if (existingItem) {
+      if (existingItem.quantity >= product.stock) {
+        setTimeout(() => toast.error(`Only ${product.stock} items in stock`), 0);
+        return prevCart;
       }
-      // Add new product
-      return [
-        ...prev,
-        {
-          id: product._id,
-          name: product.name,
-          price: product.price,
-          quantity: 1,
-          sku: product.sku,
-        },
-      ];
-    });
-  };
+
+      setTimeout(() => toast.success(`Quantity updated for ${product.name}`), 0);
+      return prevCart.map((item) =>
+        item.sku === product.sku
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      );
+    }
+
+    setTimeout(() => toast.success(`${product.name} added to cart`), 0);
+
+    return [
+      ...prevCart,
+      {
+        id: product._id,
+        name: product.name,
+        sku: product.sku,
+        price: product.price,
+        quantity: 1,
+        stock: product.stock,
+      },
+    ];
+  });
+};
+
 
   const filteredProducts = products?.filter(
     (product) =>
@@ -425,14 +447,14 @@ const POSPage = () => {
                               isDark ? "text-white" : "text-gray-900"
                             }`}
                           >
-                            ${(item.price * item.quantity).toFixed(2)}
+                            ₹{(item.price * item.quantity).toFixed(2)}
                           </p>
                           <p
-                            className={`text-xs ${
+                            className={`text-xs ₹{
                               isDark ? "text-gray-500" : "text-gray-500"
                             }`}
                           >
-                            ${item.price} each
+                            ₹{item.price} each
                           </p>
                         </div>
                       </div>
@@ -567,7 +589,7 @@ const POSPage = () => {
                       isDark ? "text-white" : "text-gray-900"
                     }`}
                   >
-                    ${subtotal.toFixed(2)}
+                    ₹{subtotal.toFixed(2)}
                   </span>
                 </div>
                 {discount > 0 && (
@@ -576,7 +598,7 @@ const POSPage = () => {
                       Discount ({discount}%)
                     </span>
                     <span className="font-semibold text-emerald-500">
-                      -${discountAmount.toFixed(2)}
+                      -₹{discountAmount.toFixed(2)}
                     </span>
                   </div>
                 )}
@@ -589,7 +611,7 @@ const POSPage = () => {
                       isDark ? "text-white" : "text-gray-900"
                     }`}
                   >
-                    ${tax.toFixed(2)}
+                    ₹{tax.toFixed(2)}
                   </span>
                 </div>
                 <div
@@ -612,7 +634,7 @@ const POSPage = () => {
                           : "from-emerald-600 to-green-700"
                       } bg-clip-text text-transparent`}
                     >
-                      ${total.toFixed(2)}
+                      ₹{total.toFixed(2)}
                     </span>
                   </div>
                 </div>

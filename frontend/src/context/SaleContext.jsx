@@ -18,6 +18,7 @@ export const SaleProvider = ({ children }) => {
     try {
       const res = await createSaleApi(data);
       console.log(res);
+      return res;
     } catch (error) {
       console.log(error);
     }
