@@ -1,3 +1,4 @@
+import ScanPage from "@/pages/barcode/ScanPage";
 import Dashboard from "@/pages/Dashboard/Dashboard";
 import LowStock from "@/pages/Dashboard/LowStockList";
 import POSPage from "@/pages/POS/POSPage";
@@ -37,7 +38,7 @@ export const protectedRoutes = [
     roles: ["admin"],
   },
   {
-    path:  "/products/edit/:sku",
+    path: "/products/edit/:sku",
     element: <ProductForm />,
     title: "Edit product",
     roles: ["admin"],
@@ -83,6 +84,12 @@ export const protectedRoutes = [
     element: <UserManagement />,
     title: "Users",
     roles: ["admin"],
+  },
+  {
+    path: "/scan",
+    element: <ScanPage />,
+    title: "Scan",
+    roles: ["admin", "cashier"],
   },
   {
     path: "/settings",

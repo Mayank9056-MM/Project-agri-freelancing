@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { AuthContext } from "@/context/AuthContext";
 import { ThemeContext } from "@/context/ThemeContext";
 import toast from "react-hot-toast";
+import { ProductContext } from "@/context/ProductContext";
 
 const Layout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -32,11 +33,12 @@ const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [lowStockCount, setLowStockCount] = useState(0);
-useEffect(() => {
-  // fetch("/api/products/low-stock")
-  //   .then(res => res.json())
-  //   .then(data => setLowStockCount(data.count));
-}, []);
+  const { getLowStockProducts } = useContext(ProductContext);
+  useEffect(() => {
+    // getLowStockProducts()
+    //   .then((data) => setLowStockCount(data?.count))
+    //   .catch((error) => console.log(error));
+  }, []);
 
   const themeChange = async () => toggleTheme();
   const isDark = theme === "dark";
@@ -332,11 +334,7 @@ useEffect(() => {
                   label="Bulk Upload"
                   path="/bulk-upload"
                 />
-                <NavItem
-                  icon={FileText}
-                  label="Sales Reports"
-                  path="/sales"
-                />
+                <NavItem icon={FileText} label="Sales Reports" path="/sales" />
                 <NavItem
                   icon={AlertCircle}
                   label="Low Stock"
