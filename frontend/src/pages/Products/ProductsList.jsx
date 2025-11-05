@@ -103,14 +103,6 @@ const ProductList = ({ onView }) => {
     return <TrendingUp className="h-4 w-4" />;
   };
 
-  const onEdit = (product) => {
-    navigate(`/products/edit/${product._id}`, { state: { product } });
-  };
-
-  const onDelete = (product) => {
-    navigate(`/products/delete/${product._id}`);
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
