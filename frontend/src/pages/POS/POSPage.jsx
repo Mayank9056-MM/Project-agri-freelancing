@@ -117,11 +117,11 @@ const POSPage = () => {
       const res = await createSale(payload);
       console.log(res);
 
-      toast.success(`Sale successful! Sale ID: ${res.saleId}`);
+      toast.success(`Sale successful! Sale ID: ${res?.saleId}`);
 
       // Prepare sale data for invoice
       const saleData = {
-        saleId: res.saleId,
+        saleId: res?.saleId,
         items,
         subtotal: items.reduce((s, i) => s + i.subtotal, 0),
         discount,
