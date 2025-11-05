@@ -181,9 +181,9 @@ export const updateUserAvatar = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    const allUsers = await User.find({ role: { $ne: "admin" } }).select(
-      "-password"
-    );
+    const allUsers = await User.find({ role: { $ne: "admin" } })
+      .select("-password")
+      .sort({ createdAt: -1 });
     console.log(allUsers);
 
     if (!allUsers) {
@@ -197,5 +197,9 @@ export const getAllUsers = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch users",
+    });
   }
 };
