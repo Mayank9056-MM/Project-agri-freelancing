@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import bcrypt from "bcrypt"
-import jwt from "jsonwebtoken"
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const userSchema = new mongoose.Schema(
   {
@@ -33,6 +33,31 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "password is required"],
     },
+    status: {
+      type: String,
+      enum: ["active", "inactive", "suspended"],
+      default: "active",
+    },
+    phone: {
+      type: String,
+      default: "",
+    },
+    permissions: {
+      type: [String],
+      default: ["sales"],
+    },
+    joinDate: {
+      type: Date,
+      default: Date.now,
+    },
+    totalSales: {
+      type: Number,
+      default: 0,
+    },
+    revenue: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
@@ -60,7 +85,6 @@ userSchema.methods.generateAccessToken = function () {
     { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
   );
 };
-
 
 const User = mongoose.model("User", userSchema);
 
