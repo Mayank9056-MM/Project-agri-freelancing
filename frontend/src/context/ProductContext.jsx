@@ -1,7 +1,15 @@
-import { createProductApi, deleteProductApi, getAllProductApi, getProductBySkuApi, updateProductApi } from "@/services/productService";
+import {
+  bulkUploadProductsApi,
+  createProductApi,
+  deleteProductApi,
+  getAllProductApi,
+  getProductBySkuApi,
+  updateProductApi,
+} from "@/services/productService";
 import { createContext, useState } from "react";
 import toast from "react-hot-toast";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const ProductContext = createContext();
 
 export const ProductProvider = ({ children }) => {
@@ -36,7 +44,7 @@ export const ProductProvider = ({ children }) => {
       .finally(() => setLoading(false));
   };
 
-    // ✏️ Update
+  // ✏️ Update
   const updateProduct = async (id, data) => {
     setLoading(true);
     try {
@@ -66,20 +74,31 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
-  const getProductBySku = async(sku) => {
-    setLoading(true)
+  const getProductBySku = async (sku) => {
+    setLoading(true);
     try {
       const res = await getProductBySkuApi(sku);
 
       console.log(res);
-      return res.product
-
+      return res.product;
     } catch (error) {
-      console.log(error)
+      console.log(error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
+
+  const bulkUpload = async (data) => {
+    setLoading(true);
+    try {
+      const res = await bulkUploadProductsApi(data);
+      return res;
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const value = {
     getAllProducts,
@@ -89,7 +108,8 @@ export const ProductProvider = ({ children }) => {
     updateProduct,
     deleteProduct,
     loading,
-    getProductBySku
+    getProductBySku,
+    bulkUpload
   };
 
   return (

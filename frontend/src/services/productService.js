@@ -83,3 +83,25 @@ export const getProductBySkuApi = async (sku) => {
     console.log(error);
   }
 };
+
+/**
+ * Uploads multiple products to the database in a single request.
+ *
+ * @param {object[]} data - An array of objects containing the following:
+ *   - sku: The SKU of the product.
+ *   - name: The name of the product.
+ *   - price: The price of the product.
+ *   - quantity: The quantity of the product in stock.
+ *   - description: The description of the product.
+ *   - image: The image of the product.
+ * @returns {Promise<object>} A promise that resolves with an object containing the IDs of the created products.
+ */
+export const bulkUploadProductsApi = async (data) => {
+  try {
+    const res = await api.post("/bulk-upload", data);
+    console.log(res);
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
