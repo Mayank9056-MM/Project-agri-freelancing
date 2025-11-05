@@ -245,3 +245,49 @@ export const bulkUploadProducts = async (req, res) => {
     });
   }
 };
+
+/**
+ * Get all products with low stock
+ * Low stock is defined as products with stock < minStock or stock < reorderPoint
+ * @returns {Object} - response with success status, fetched products and message
+ * @throws {Error} - if something goes wrong while fetching products
+ */
+
+export const getLowStockProducts = async (req, res, next) => {
+  try {
+    // ✅ Find products where stock < low_stock_threshold
+    const products = await Product.find({
+      $expr: { $lt: ["$stock", "$low_stock_threshold"] },
+    }).sort({ stock: 1 });
+
+    // ✅ Map data to the format your frontend expects
+    const mapped = products.map((p) => {
+      let status = "low";
+      // Critical = less than half the threshold
+      if (p.stock <= p.low_stock_threshold / 2) status = "critical";
+
+      return {
+        id: p._id,
+        sku: p.sku,
+        name: p.name,
+        currentStock: p.stock,
+        minStock: p.low_stock_threshold, // renamed field for compatibility
+        reorderPoint: Math.round(p.low_stock_threshold * 0.8), // estimate
+        price: p.price,
+        category: p.category || "General",
+        supplier: p.supplier || "Unknown",
+        lastRestocked: p.updatedAt,
+        status,
+      };
+    });
+
+    res.status(200).json({
+      status: 200,
+      message: "Low stock products fetched successfully",
+      products: mapped,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

@@ -106,3 +106,21 @@ export const bulkUploadProductsApi = async (data) => {
     console.log(error);
   }
 };
+
+/**
+ * Retrieves all products with low stock from the database.
+ *
+ * Low stock is defined as products with stock < minStock or stock < reorderPoint
+ *
+ * @returns {Promise<object[]>} A promise that resolves with an array of product objects with low stock.
+ * @throws {Error} - if something goes wrong while fetching products
+ */
+export const getLowStockProductsApi = async () => {
+  try {
+    const res = await api.get("product/low-stock");
+    return res.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};

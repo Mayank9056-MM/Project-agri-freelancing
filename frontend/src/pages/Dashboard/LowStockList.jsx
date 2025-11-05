@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   Package,
   AlertTriangle,
@@ -22,127 +22,151 @@ import {
 } from "@/components/ui/card";
 import { ThemeContext } from "@/context/ThemeContext";
 import { AuthContext } from "@/context/AuthContext";
+import { ProductContext } from "@/context/ProductContext";
 
 const LowStock = () => {
   const { theme } = useContext(ThemeContext);
   const isDark = theme === "dark";
   const { user } = useContext(AuthContext);
 
+  const [lowStockItems, setLowStockItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const { getLowStockProducts } = useContext(ProductContext);
 
-  // Mock data - replace with actual API data
-  const lowStockItems = [
-    {
-      id: 1,
-      sku: "LAP-001",
-      name: "Dell XPS 15 Laptop",
-      currentStock: 3,
-      minStock: 10,
-      reorderPoint: 8,
-      price: 1299,
-      category: "Electronics",
-      supplier: "Dell Inc.",
-      lastRestocked: "2024-10-15",
-      status: "critical",
-    },
-    {
-      id: 2,
-      sku: "PHN-102",
-      name: "iPhone 15 Pro",
-      currentStock: 5,
-      minStock: 15,
-      reorderPoint: 12,
-      price: 999,
-      category: "Smartphones",
-      supplier: "Apple",
-      lastRestocked: "2024-10-20",
-      status: "low",
-    },
-    {
-      id: 3,
-      sku: "TAB-205",
-      name: "iPad Air",
-      currentStock: 2,
-      minStock: 8,
-      reorderPoint: 6,
-      price: 599,
-      category: "Tablets",
-      supplier: "Apple",
-      lastRestocked: "2024-10-18",
-      status: "critical",
-    },
-    {
-      id: 4,
-      sku: "HDP-301",
-      name: "Sony WH-1000XM5",
-      currentStock: 7,
-      minStock: 20,
-      reorderPoint: 15,
-      price: 399,
-      category: "Audio",
-      supplier: "Sony",
-      lastRestocked: "2024-10-25",
-      status: "low",
-    },
-    {
-      id: 5,
-      sku: "MON-403",
-      name: "LG UltraWide Monitor",
-      currentStock: 1,
-      minStock: 6,
-      reorderPoint: 5,
-      price: 799,
-      category: "Monitors",
-      supplier: "LG Electronics",
-      lastRestocked: "2024-10-12",
-      status: "critical",
-    },
-    {
-      id: 6,
-      sku: "KBD-501",
-      name: "Logitech MX Keys",
-      currentStock: 8,
-      minStock: 25,
-      reorderPoint: 18,
-      price: 99,
-      category: "Accessories",
-      supplier: "Logitech",
-      lastRestocked: "2024-10-28",
-      status: "low",
-    },
-    {
-      id: 7,
-      sku: "MSE-502",
-      name: "Logitech MX Master 3S",
-      currentStock: 4,
-      minStock: 20,
-      reorderPoint: 15,
-      price: 99,
-      category: "Accessories",
-      supplier: "Logitech",
-      lastRestocked: "2024-10-22",
-      status: "low",
-    },
-    {
-      id: 8,
-      sku: "CAM-601",
-      name: "Logitech Brio 4K Webcam",
-      currentStock: 2,
-      minStock: 10,
-      reorderPoint: 8,
-      price: 199,
-      category: "Accessories",
-      supplier: "Logitech",
-      lastRestocked: "2024-10-10",
-      status: "critical",
-    },
-  ];
+  const fetchLowStock = async () => {
+    try {
+      const res = await getLowStockProducts();
+      console.log(res)
+      setLowStockItems(res.products || []);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load low stock items.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLowStock();
+  }, []);
+
+  // // Mock data - replace with actual API data
+  // const lowStockItems = [
+  //   {
+  //     id: 1,
+  //     sku: "LAP-001",
+  //     name: "Dell XPS 15 Laptop",
+  //     currentStock: 3,
+  //     minStock: 10,
+  //     reorderPoint: 8,
+  //     price: 1299,
+  //     category: "Electronics",
+  //     supplier: "Dell Inc.",
+  //     lastRestocked: "2024-10-15",
+  //     status: "critical",
+  //   },
+  //   {
+  //     id: 2,
+  //     sku: "PHN-102",
+  //     name: "iPhone 15 Pro",
+  //     currentStock: 5,
+  //     minStock: 15,
+  //     reorderPoint: 12,
+  //     price: 999,
+  //     category: "Smartphones",
+  //     supplier: "Apple",
+  //     lastRestocked: "2024-10-20",
+  //     status: "low",
+  //   },
+  //   {
+  //     id: 3,
+  //     sku: "TAB-205",
+  //     name: "iPad Air",
+  //     currentStock: 2,
+  //     minStock: 8,
+  //     reorderPoint: 6,
+  //     price: 599,
+  //     category: "Tablets",
+  //     supplier: "Apple",
+  //     lastRestocked: "2024-10-18",
+  //     status: "critical",
+  //   },
+  //   {
+  //     id: 4,
+  //     sku: "HDP-301",
+  //     name: "Sony WH-1000XM5",
+  //     currentStock: 7,
+  //     minStock: 20,
+  //     reorderPoint: 15,
+  //     price: 399,
+  //     category: "Audio",
+  //     supplier: "Sony",
+  //     lastRestocked: "2024-10-25",
+  //     status: "low",
+  //   },
+  //   {
+  //     id: 5,
+  //     sku: "MON-403",
+  //     name: "LG UltraWide Monitor",
+  //     currentStock: 1,
+  //     minStock: 6,
+  //     reorderPoint: 5,
+  //     price: 799,
+  //     category: "Monitors",
+  //     supplier: "LG Electronics",
+  //     lastRestocked: "2024-10-12",
+  //     status: "critical",
+  //   },
+  //   {
+  //     id: 6,
+  //     sku: "KBD-501",
+  //     name: "Logitech MX Keys",
+  //     currentStock: 8,
+  //     minStock: 25,
+  //     reorderPoint: 18,
+  //     price: 99,
+  //     category: "Accessories",
+  //     supplier: "Logitech",
+  //     lastRestocked: "2024-10-28",
+  //     status: "low",
+  //   },
+  //   {
+  //     id: 7,
+  //     sku: "MSE-502",
+  //     name: "Logitech MX Master 3S",
+  //     currentStock: 4,
+  //     minStock: 20,
+  //     reorderPoint: 15,
+  //     price: 99,
+  //     category: "Accessories",
+  //     supplier: "Logitech",
+  //     lastRestocked: "2024-10-22",
+  //     status: "low",
+  //   },
+  //   {
+  //     id: 8,
+  //     sku: "CAM-601",
+  //     name: "Logitech Brio 4K Webcam",
+  //     currentStock: 2,
+  //     minStock: 10,
+  //     reorderPoint: 8,
+  //     price: 199,
+  //     category: "Accessories",
+  //     supplier: "Logitech",
+  //     lastRestocked: "2024-10-10",
+  //     status: "critical",
+  //   },
+  // ];
 
   const stats = [
     {
       title: "Critical Items",
-      value: lowStockItems.filter((item) => item.status === "critical").length.toString(),
+      value: lowStockItems
+        .filter((item) => item.status === "critical")
+        .length.toString(),
       icon: AlertTriangle,
       change: "Urgent",
       subtext: "Need immediate restock",
@@ -152,7 +176,9 @@ const LowStock = () => {
     },
     {
       title: "Low Stock Items",
-      value: lowStockItems.filter((item) => item.status === "low").length.toString(),
+      value: lowStockItems
+        .filter((item) => item.status === "low")
+        .length.toString(),
       icon: TrendingDown,
       change: "Warning",
       subtext: "Below reorder point",
@@ -250,6 +276,7 @@ const LowStock = () => {
             Export
           </Button>
           <Button
+            onClick={fetchLowStock}
             className={`bg-gradient-to-r ${
               isDark
                 ? "from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
@@ -403,9 +430,7 @@ const LowStock = () => {
         <CardHeader>
           <CardTitle
             className={`bg-gradient-to-r ${
-              isDark
-                ? "from-white to-gray-400"
-                : "from-gray-900 to-gray-600"
+              isDark ? "from-white to-gray-400" : "from-gray-900 to-gray-600"
             } bg-clip-text text-transparent`}
           >
             Inventory Items
@@ -452,9 +477,15 @@ const LowStock = () => {
                             SKU: {item.sku} • {item.category}
                           </p>
                         </div>
-                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${statusBadge.bg}`}>
-                          <statusBadge.icon className={`h-4 w-4 ${statusBadge.text}`} />
-                          <span className={`text-xs font-semibold ${statusBadge.text}`}>
+                        <div
+                          className={`flex items-center gap-2 px-3 py-1 rounded-full ${statusBadge.bg}`}
+                        >
+                          <statusBadge.icon
+                            className={`h-4 w-4 ${statusBadge.text}`}
+                          />
+                          <span
+                            className={`text-xs font-semibold ${statusBadge.text}`}
+                          >
                             {statusBadge.label}
                           </span>
                         </div>
@@ -489,7 +520,9 @@ const LowStock = () => {
                                 ? "bg-gradient-to-r from-rose-500 to-red-600"
                                 : "bg-gradient-to-r from-amber-500 to-orange-600"
                             }`}
-                            style={{ width: `${Math.min(stockPercentage, 100)}%` }}
+                            style={{
+                              width: `${Math.min(stockPercentage, 100)}%`,
+                            }}
                           />
                         </div>
                       </div>
