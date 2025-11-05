@@ -116,7 +116,7 @@ export const AuthProvider = ({ children }) => {
   const getAllUsers = async () => {
     try {
       const data = await getAllUsersApi();
-      return data;
+      return data.users;
     } catch (error) {
       console.log(error);
     }

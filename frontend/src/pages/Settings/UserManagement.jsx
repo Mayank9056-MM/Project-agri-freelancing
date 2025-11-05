@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   Users,
   UserPlus,
@@ -33,104 +33,114 @@ import { AuthContext } from "@/context/AuthContext";
 const UserManagement = () => {
   const { theme } = useContext(ThemeContext);
   const isDark = theme === "dark";
-  const { user } = useContext(AuthContext);
+  const { user, getAllUsers } = useContext(AuthContext);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [cashiers, setCashiers] = useState([]);
 
-  // Mock data - replace with actual API data
-  const cashiers = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      email: "sarah.johnson@store.com",
-      phone: "+1 (555) 123-4567",
-      role: "Senior Cashier",
-      status: "active",
-      avatar: "SJ",
-      joinDate: "2023-01-15",
-      totalSales: 1245,
-      revenue: 156780,
-      lastActive: "2 mins ago",
-      permissions: ["sales", "returns", "reports"],
-    },
-    {
-      id: 2,
-      name: "Michael Chen",
-      email: "michael.chen@store.com",
-      phone: "+1 (555) 234-5678",
-      role: "Cashier",
-      status: "active",
-      avatar: "MC",
-      joinDate: "2023-03-22",
-      totalSales: 892,
-      revenue: 98340,
-      lastActive: "15 mins ago",
-      permissions: ["sales", "returns"],
-    },
-    {
-      id: 3,
-      name: "Emily Rodriguez",
-      email: "emily.rodriguez@store.com",
-      phone: "+1 (555) 345-6789",
-      role: "Cashier",
-      status: "inactive",
-      avatar: "ER",
-      joinDate: "2023-05-10",
-      totalSales: 567,
-      revenue: 67890,
-      lastActive: "2 days ago",
-      permissions: ["sales"],
-    },
-    {
-      id: 4,
-      name: "David Park",
-      email: "david.park@store.com",
-      phone: "+1 (555) 456-7890",
-      role: "Senior Cashier",
-      status: "active",
-      avatar: "DP",
-      joinDate: "2022-11-05",
-      totalSales: 1567,
-      revenue: 203450,
-      lastActive: "1 hour ago",
-      permissions: ["sales", "returns", "reports", "inventory"],
-    },
-    {
-      id: 5,
-      name: "Jessica Williams",
-      email: "jessica.williams@store.com",
-      phone: "+1 (555) 567-8901",
-      role: "Cashier",
-      status: "active",
-      avatar: "JW",
-      joinDate: "2023-07-18",
-      totalSales: 423,
-      revenue: 54320,
-      lastActive: "30 mins ago",
-      permissions: ["sales", "returns"],
-    },
-    {
-      id: 6,
-      name: "Robert Taylor",
-      email: "robert.taylor@store.com",
-      phone: "+1 (555) 678-9012",
-      role: "Cashier",
-      status: "suspended",
-      avatar: "RT",
-      joinDate: "2023-02-28",
-      totalSales: 234,
-      revenue: 28900,
-      lastActive: "1 week ago",
-      permissions: ["sales"],
-    },
-  ];
+  useEffect(() => {
+    getAllUsers()
+      .then((data) => {
+        console.log(data)
+        setCashiers(data);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
+  // // Mock data - replace with actual API data
+  // const cashiers = [
+  //   {
+  //     id: 1,
+  //     name: "Sarah Johnson",
+  //     email: "sarah.johnson@store.com",
+  //     phone: "+1 (555) 123-4567",
+  //     role: "Senior Cashier",
+  //     status: "active",
+  //     avatar: "SJ",
+  //     joinDate: "2023-01-15",
+  //     totalSales: 1245,
+  //     revenue: 156780,
+  //     lastActive: "2 mins ago",
+  //     permissions: ["sales", "returns", "reports"],
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Michael Chen",
+  //     email: "michael.chen@store.com",
+  //     phone: "+1 (555) 234-5678",
+  //     role: "Cashier",
+  //     status: "active",
+  //     avatar: "MC",
+  //     joinDate: "2023-03-22",
+  //     totalSales: 892,
+  //     revenue: 98340,
+  //     lastActive: "15 mins ago",
+  //     permissions: ["sales", "returns"],
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Emily Rodriguez",
+  //     email: "emily.rodriguez@store.com",
+  //     phone: "+1 (555) 345-6789",
+  //     role: "Cashier",
+  //     status: "inactive",
+  //     avatar: "ER",
+  //     joinDate: "2023-05-10",
+  //     totalSales: 567,
+  //     revenue: 67890,
+  //     lastActive: "2 days ago",
+  //     permissions: ["sales"],
+  //   },
+  //   {
+  //     id: 4,
+  //     name: "David Park",
+  //     email: "david.park@store.com",
+  //     phone: "+1 (555) 456-7890",
+  //     role: "Senior Cashier",
+  //     status: "active",
+  //     avatar: "DP",
+  //     joinDate: "2022-11-05",
+  //     totalSales: 1567,
+  //     revenue: 203450,
+  //     lastActive: "1 hour ago",
+  //     permissions: ["sales", "returns", "reports", "inventory"],
+  //   },
+  //   {
+  //     id: 5,
+  //     name: "Jessica Williams",
+  //     email: "jessica.williams@store.com",
+  //     phone: "+1 (555) 567-8901",
+  //     role: "Cashier",
+  //     status: "active",
+  //     avatar: "JW",
+  //     joinDate: "2023-07-18",
+  //     totalSales: 423,
+  //     revenue: 54320,
+  //     lastActive: "30 mins ago",
+  //     permissions: ["sales", "returns"],
+  //   },
+  //   {
+  //     id: 6,
+  //     name: "Robert Taylor",
+  //     email: "robert.taylor@store.com",
+  //     phone: "+1 (555) 678-9012",
+  //     role: "Cashier",
+  //     status: "suspended",
+  //     avatar: "RT",
+  //     joinDate: "2023-02-28",
+  //     totalSales: 234,
+  //     revenue: 28900,
+  //     lastActive: "1 week ago",
+  //     permissions: ["sales"],
+  //   },
+  // ];
 
   const stats = [
     {
       title: "Total Cashiers",
-      value: cashiers.length.toString(),
+      value: cashiers?.length?.toString(),
       icon: Users,
       change: "+2 this month",
       subtext: "Active staff members",
@@ -140,7 +150,7 @@ const UserManagement = () => {
     },
     {
       title: "Active Now",
-      value: cashiers.filter((c) => c.status === "active").length.toString(),
+      value: cashiers?.filter((c) => c.status === "active")?.length?.toString(),
       icon: Activity,
       change: "Online",
       subtext: "Currently working",
@@ -150,7 +160,9 @@ const UserManagement = () => {
     },
     {
       title: "Total Revenue",
-      value: `$${(cashiers.reduce((acc, c) => acc + c.revenue, 0) / 1000).toFixed(0)}K`,
+      value: `$${(
+        cashiers?.reduce((acc, c) => acc + c.revenue, 0) / 1000
+      ).toFixed(0)}K`,
       icon: Activity,
       change: "+15.3%",
       subtext: "Combined sales",
@@ -160,7 +172,7 @@ const UserManagement = () => {
     },
     {
       title: "Pending Issues",
-      value: cashiers.filter((c) => c.status === "suspended").length.toString(),
+      value: cashiers?.filter((c) => c.status === "suspended")?.length?.toString(),
       icon: Shield,
       change: "Action Required",
       subtext: "Needs attention",
@@ -208,7 +220,7 @@ const UserManagement = () => {
 
   const filteredCashiers = cashiers.filter((cashier) => {
     const matchesSearch =
-      cashier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cashier.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       cashier.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       cashier.phone.includes(searchTerm);
     const matchesFilter =
@@ -281,7 +293,9 @@ const UserManagement = () => {
                     {stat.value}
                   </p>
                   <div className="flex items-center gap-3 mt-3">
-                    <span className={`text-sm font-semibold ${stat.changeColor}`}>
+                    <span
+                      className={`text-sm font-semibold ${stat.changeColor}`}
+                    >
                       {stat.change}
                     </span>
                     <span
@@ -388,7 +402,7 @@ const UserManagement = () => {
 
           return (
             <Card
-              key={cashier.id}
+              key={cashier._id}
               className={`border-0 overflow-hidden transition-all hover:scale-[1.02] ${
                 isDark
                   ? "bg-gradient-to-br from-gray-900 to-gray-800 shadow-2xl"
@@ -593,9 +607,7 @@ const UserManagement = () => {
                       Suspend
                     </Button>
                   ) : (
-                    <Button
-                      className="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700"
-                    >
+                    <Button className="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700">
                       <Unlock className="h-4 w-4 mr-2" />
                       Activate
                     </Button>
