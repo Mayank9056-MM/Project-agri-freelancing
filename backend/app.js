@@ -56,7 +56,6 @@ import userRouter from "./routes/user.routes.js";
 import saleRouter from "./routes/sale.routes.js";
 import productRouter from "./routes/product.routes.js";
 import barcodeRouter from "./routes/barcode.routes.js";
-import { Logger } from "winston";
 
 // Api routes
 app.use("/api/v1/user", userRouter);
