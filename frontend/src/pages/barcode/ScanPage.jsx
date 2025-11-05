@@ -10,15 +10,18 @@ import {
 } from "@/components/ui/card";
 import { Camera, X, Scan, CheckCircle } from "lucide-react";
 import { ThemeContext } from "@/context/ThemeContext";
+import { ProductContext } from "@/context/ProductContext";
 
 const ScanPage = () => {
   const { theme } = useContext(ThemeContext);
+  const { getProductFromBarcode } = useContext(ProductContext);
   const isDark = theme === "dark";
 
   const videoRef = useRef(null);
   const [scanner, setScanner] = useState(null);
   const [scannedResult, setScannedResult] = useState("");
   const [isScanning, setIsScanning] = useState(false);
+  const [product, setProduct] = useState(null);
 
   useEffect(() => {
     const reader = new BrowserMultiFormatReader();
@@ -57,6 +60,10 @@ const ScanPage = () => {
             const code = result.getText();
             setScannedResult(code);
             stopScanner();
+
+            getProductFromBarcode(code)
+              .then((data) => setProduct(data))
+              .catch((err) => console.error(err));
           }
         }
       );
@@ -206,6 +213,55 @@ const ScanPage = () => {
                       {scannedResult}
                     </p>
                   </div>
+                  {product && (
+                    <div
+                      className={`p-6 rounded-xl border transition-all animate-in fade-in duration-500 ${
+                        isDark
+                          ? "bg-gradient-to-br from-gray-900 to-gray-800 border-gray-700"
+                          : "bg-gradient-to-br from-white to-gray-50 border-gray-200"
+                      }`}
+                    >
+                      <div className="flex items-center gap-6">
+                        {product.image && (
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-24 h-24 rounded-xl object-cover shadow-md"
+                          />
+                        )}
+                        <div className="flex flex-col gap-1">
+                          <h3
+                            className={`text-xl font-semibold ${
+                              isDark ? "text-white" : "text-gray-900"
+                            }`}
+                          >
+                            {product.name}
+                          </h3>
+                          <p
+                            className={`text-sm ${
+                              isDark ? "text-gray-400" : "text-gray-600"
+                            }`}
+                          >
+                            {product.category}
+                          </p>
+                          <p
+                            className={`text-lg font-bold ${
+                              isDark ? "text-emerald-400" : "text-emerald-600"
+                            }`}
+                          >
+                            ₹{product.price}
+                          </p>
+                          <p
+                            className={`text-sm ${
+                              isDark ? "text-gray-400" : "text-gray-600"
+                            }`}
+                          >
+                            Stock: {product.stock} {product.unit}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
