@@ -98,7 +98,7 @@ export const getProductBySkuApi = async (sku) => {
  */
 export const bulkUploadProductsApi = async (data) => {
   try {
-    console.log(data)
+    console.log(data);
     const res = await api.post("product/bulk-upload", data);
     console.log(res);
     return res.data;
@@ -121,6 +121,25 @@ export const getLowStockProductsApi = async () => {
     return res.data;
   } catch (error) {
     console.error(error);
+    throw error;
+  }
+};
+
+/**
+ * Retrieves a product from the database by barcode.
+ *
+ * @param {string} barcode - The barcode of the product to retrieve.
+ * @returns {Promise<object>} A promise that resolves with the product object.
+ * @throws {Error} - if something goes wrong while fetching product
+ */
+
+export const getProductFromBarcodeApi = async (barcode) => {
+  try {
+    const res = await api.get(`product/barcode/${barcode}`);
+    console.log(res);
+    return res.data;
+  } catch (error) {
+    console.log(error);
     throw error;
   }
 };
