@@ -246,13 +246,18 @@ export const bulkUploadProducts = async (req, res) => {
   }
 };
 
+
+
 /**
- * Get all products with low stock
- * Low stock is defined as products with stock < minStock or stock < reorderPoint
- * @returns {Object} - response with success status, fetched products and message
+ * Retrieves all products with low stock from the database.
+ *
+ * Low stock is defined as products with stock < low_stock_threshold
+ *
+ * Critical stock is defined as products with stock <= low_stock_threshold / 2
+ *
+ * @returns {Promise<object[]>} A promise that resolves with an array of product objects with low stock.
  * @throws {Error} - if something goes wrong while fetching products
  */
-
 export const getLowStockProducts = async (req, res, next) => {
   try {
     // ✅ Find products where stock < low_stock_threshold
@@ -290,4 +295,50 @@ export const getLowStockProducts = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Retrieves a product by its barcode.
+ *
+ * @param {string} req.params.code - barcode of the product to retrieve
+ * @returns {Object} - response with success status, fetched product and message
+ * @throws {Error} - if something goes wrong while fetching product
+ */
+export const getProductByBarcode = async (req, res) => {
+  try {
+    const { code } = req.params;
+
+    console.log(code)
+    if(!code){
+      return res.status(400).json({
+        success: false,
+        message: "Barcode is required",
+      });
+    }
+
+
+    // find by barcode
+    const product = await Product.findOne({ barcode: code });
+
+    console.log(product)
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found for this barcode",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      product,
+    });
+  } catch (err) {
+    console.error("Error fetching product by barcode:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error fetching product by barcode",
+    });
+  }
+};
+
 

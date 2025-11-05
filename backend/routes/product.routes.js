@@ -7,6 +7,7 @@ import {
   deleteProduct,
   getAllProducts,
   getLowStockProducts,
+  getProductByBarcode,
   getProductBySku,
   updateProduct,
 } from "../controllers/product.controllers.js";
@@ -21,6 +22,8 @@ productRouter
 productRouter.get("/low-stock", verifyAuth, verifyAdmin, getLowStockProducts);
 
 productRouter.post("/bulk-upload", verifyAuth, verifyAdmin, bulkUploadProducts);
+
+productRouter.get("/barcode/:code", verifyAuth, getProductByBarcode);
 
 productRouter
   .route("/:sku")

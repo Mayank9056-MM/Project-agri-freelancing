@@ -31,6 +31,7 @@ import { SaleContext } from "@/context/SaleContext";
 import { toast } from "react-hot-toast";
 import { generateInvoice } from "@/utils/generateInvoice";
 import { ProductContext } from "@/context/ProductContext";
+import { useNavigate } from "react-router-dom";
 
 const POSPage = () => {
   const { theme } = useContext(ThemeContext);
@@ -49,6 +50,8 @@ const POSPage = () => {
   const discountAmount = (subtotal * discount) / 100;
   const tax = (subtotal - discountAmount) * 0.18; // 18% tax
   const total = subtotal - discountAmount + tax;
+
+  const navigate = useNavigate()
 
   useEffect(() => {
     const savedCart = localStorage.getItem("pos_cart");
@@ -266,6 +269,7 @@ const addToCart = (product) => {
                   />
                 </div>
                 <Button
+                  onClick={() => navigate("/scan")}
                   className={`bg-gradient-to-r ${
                     isDark
                       ? "from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"

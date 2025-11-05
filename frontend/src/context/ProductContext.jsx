@@ -5,8 +5,10 @@ import {
   getAllProductApi,
   getLowStockProductsApi,
   getProductBySkuApi,
+  getProductFromBarcodeApi,
   updateProductApi,
 } from "@/services/productService";
+import { get } from "http";
 import { createContext, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -16,7 +18,7 @@ export const ProductContext = createContext();
 export const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
-  
+
   /**
    * Retrieves all products from the database.
    *
@@ -53,7 +55,6 @@ export const ProductProvider = ({ children }) => {
       .finally(() => setLoading(false));
   };
 
- 
   /**
    * Updates a product in the database.
    *
@@ -76,15 +77,14 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
-  
-/**
- * Deletes a product from the database by ID.
- *
- * @param {string} id - The ID of the product to delete.
- *
- * @returns {Promise<void>} A promise that resolves when the product has been deleted.
- * @throws {Error} - if something goes wrong while deleting the product
- */
+  /**
+   * Deletes a product from the database by ID.
+   *
+   * @param {string} id - The ID of the product to delete.
+   *
+   * @returns {Promise<void>} A promise that resolves when the product has been deleted.
+   * @throws {Error} - if something goes wrong while deleting the product
+   */
   const deleteProduct = async (id) => {
     setLoading(true);
     try {
@@ -99,13 +99,13 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
-/**
- * Retrieves a product from the database by SKU.
- *
- * @param {string} sku - The SKU of the product to retrieve.
- * @returns {Promise<object>} A promise that resolves with the product object.
- * @throws {Error} - if something goes wrong while fetching the product
- */
+  /**
+   * Retrieves a product from the database by SKU.
+   *
+   * @param {string} sku - The SKU of the product to retrieve.
+   * @returns {Promise<object>} A promise that resolves with the product object.
+   * @throws {Error} - if something goes wrong while fetching the product
+   */
   const getProductBySku = async (sku) => {
     setLoading(true);
     try {
@@ -120,19 +120,19 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
-/**
- * Bulk uploads products to the database.
- *
- * @param {object[]} data - An array of objects containing the following:
- *   - sku: The SKU of the product.
- *   - name: The name of the product.
- *   - price: The price of the product.
- *   - quantity: The quantity of the product in stock.
- *   - description: The description of the product.
- *   - image: The image of the product.
- * @returns {Promise<object>} A promise that resolves with an object containing the IDs of the created products.
- * @throws {Error} - if something goes wrong while bulk uploading products
- */
+  /**
+   * Bulk uploads products to the database.
+   *
+   * @param {object[]} data - An array of objects containing the following:
+   *   - sku: The SKU of the product.
+   *   - name: The name of the product.
+   *   - price: The price of the product.
+   *   - quantity: The quantity of the product in stock.
+   *   - description: The description of the product.
+   *   - image: The image of the product.
+   * @returns {Promise<object>} A promise that resolves with an object containing the IDs of the created products.
+   * @throws {Error} - if something goes wrong while bulk uploading products
+   */
   const bulkUpload = async (data) => {
     setLoading(true);
     try {
@@ -145,19 +145,30 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
-  const getLowStockProducts = async() => {
-    setLoading(true)
+  const getLowStockProducts = async () => {
+    setLoading(true);
     try {
       const res = await getLowStockProductsApi();
-      console.log(res)
+      console.log(res);
       return res;
-
     } catch (error) {
-      console.log(error)
+      console.log(error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
+
+  const getProductFromBarcode = async (barcode) => {
+    try {
+      setLoading(true);
+      const res = await getProductFromBarcodeApi(barcode);
+      return res;
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const value = {
     getAllProducts,
@@ -169,7 +180,8 @@ export const ProductProvider = ({ children }) => {
     loading,
     getProductBySku,
     bulkUpload,
-    getLowStockProducts
+    getLowStockProducts,
+    getProductFromBarcode,
   };
 
   return (
