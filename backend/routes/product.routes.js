@@ -2,6 +2,7 @@ import express from "express";
 import { verifyAdmin, verifyAuth } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.js";
 import {
+  bulkUploadProducts,
   createProduct,
   deleteProduct,
   getAllProducts,
@@ -20,5 +21,7 @@ productRouter
   .patch(verifyAuth, verifyAdmin, upload.single("image"), updateProduct)
   .delete(verifyAuth, verifyAdmin, deleteProduct)
   .get(verifyAuth, verifyAdmin, getProductBySku);
+
+productRouter.post("/bulk-upload", verifyAuth, verifyAdmin, bulkUploadProducts);
 
 export default productRouter;
