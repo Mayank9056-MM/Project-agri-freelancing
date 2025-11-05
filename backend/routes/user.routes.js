@@ -1,13 +1,14 @@
 import express from "express";
 import {
   currentUser,
+  getAllUsers,
   loginUser,
   logoutUser,
   registerUser,
-  updateUserAvatar
+  updateUserAvatar,
 } from "../controllers/user.controllers.js";
 import { upload } from "../middlewares/multer.js";
-import { verifyAuth } from "../middlewares/auth.middleware.js";
+import { verifyAdmin, verifyAuth } from "../middlewares/auth.middleware.js";
 
 const userRouter = express.Router();
 
@@ -17,6 +18,8 @@ userRouter
   .route("/")
   .get(verifyAuth, currentUser)
   .patch(verifyAuth, upload.single("avatar"), updateUserAvatar)
-  .post(verifyAuth,logoutUser)
+  .post(verifyAuth, logoutUser);
 
-  export default userRouter;
+userRouter.route("/get").get(verifyAuth, verifyAdmin, getAllUsers);
+
+export default userRouter;
