@@ -20,6 +20,7 @@ const generateAccessToken = async (userId) => {
 
 // main functions
 export const registerUser = async (req, res) => {
+  console.log(res.body)
   try {
     const { fullName, email, password } = req.body;
 

@@ -65,6 +65,9 @@ const ScanPage = () => {
               .then((data) => setProduct(data))
               .catch((err) => console.error(err));
           }
+          if (err) {
+            console.error("Decode error:", err);
+          }
         }
       );
     } catch (err) {

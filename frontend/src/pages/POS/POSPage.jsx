@@ -51,7 +51,7 @@ const POSPage = () => {
   const tax = (subtotal - discountAmount) * 0.18; // 18% tax
   const total = subtotal - discountAmount + tax;
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
     const savedCart = localStorage.getItem("pos_cart");
@@ -110,6 +110,10 @@ const POSPage = () => {
         subtotal: item.price * item.quantity,
       }));
 
+      if (paymentMethod === "upi") {
+        handleUpiPayment();
+      }
+
       const payload = {
         items,
         paymentMethod,
@@ -146,46 +150,61 @@ const POSPage = () => {
 
   const quickDiscounts = [5, 10, 15, 20];
 
-const addToCart = (product) => {
-  setCart((prevCart) => {
-    const existingItem = prevCart.find((item) => item.sku === product.sku);
+  const addToCart = (product) => {
+    setCart((prevCart) => {
+      const existingItem = prevCart.find((item) => item.sku === product.sku);
 
-    if (existingItem) {
-      if (existingItem.quantity >= product.stock) {
-        setTimeout(() => toast.error(`Only ${product.stock} items in stock`), 0);
-        return prevCart;
+      if (existingItem) {
+        if (existingItem.quantity >= product.stock) {
+          setTimeout(
+            () => toast.error(`Only ${product.stock} items in stock`),
+            0
+          );
+          return prevCart;
+        }
+
+        setTimeout(
+          () => toast.success(`Quantity updated for ${product.name}`),
+          0
+        );
+        return prevCart.map((item) =>
+          item.sku === product.sku
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
       }
 
-      setTimeout(() => toast.success(`Quantity updated for ${product.name}`), 0);
-      return prevCart.map((item) =>
-        item.sku === product.sku
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      );
-    }
+      setTimeout(() => toast.success(`${product.name} added to cart`), 0);
 
-    setTimeout(() => toast.success(`${product.name} added to cart`), 0);
-
-    return [
-      ...prevCart,
-      {
-        id: product._id,
-        name: product.name,
-        sku: product.sku,
-        price: product.price,
-        quantity: 1,
-        stock: product.stock,
-      },
-    ];
-  });
-};
-
+      return [
+        ...prevCart,
+        {
+          id: product._id,
+          name: product.name,
+          sku: product.sku,
+          price: product.price,
+          quantity: 1,
+          stock: product.stock,
+        },
+      ];
+    });
+  };
 
   const filteredProducts = products?.filter(
     (product) =>
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.sku.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleUpiPayment = () => {
+    const upiId = "mayankmahajan@upi"; // your UPI ID
+    const name = "StockFlow";
+    const amount = 199.99;
+    const note = "StockFlow Billing";
+
+    const upiUrl = `upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR&tn=${note}`;
+    window.location.href = upiUrl;
+  };
 
   return (
     <div className="space-y-6">

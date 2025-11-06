@@ -8,7 +8,6 @@ import {
   getProductFromBarcodeApi,
   updateProductApi,
 } from "@/services/productService";
-import { get } from "http";
 import { createContext, useState } from "react";
 import toast from "react-hot-toast";
 
