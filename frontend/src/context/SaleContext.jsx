@@ -63,6 +63,7 @@ export const SaleProvider = ({ children }) => {
    * @throws {Error} - if something goes wrong while initiating the checkout
    */
   const initiateStripeCheckout = async (items, PaymentMethod) => {
+    
     try {
       const res = await initiateStripeCheckoutApi(items, PaymentMethod);
       console.log(res);

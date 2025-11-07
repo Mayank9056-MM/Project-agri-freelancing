@@ -6,64 +6,68 @@ import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+export const initiateStripeCheckout = async (req, res) => {
+  try {
+    const { items, paymentMethod } = req.body;
 
-export const initiateStripeCheckout = asyncHandler(async (req, res) => {
-  const { items, paymentMethod } = req.body;
+    console.log(items, paymentMethod);
 
-  console.log(items, paymentMethod);
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: "No items to checkout" });
+    }
 
-  if (!items || !Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ message: "No items to checkout" });
-  }
+    const today = new Date();
+    const datePart = today.toISOString().split("T")[0].replace(/-/g, "");
 
-  const today = new Date();
-  const datePart = today.toISOString().split("T")[0].replace(/-/g, "");
+    const counter = await Counter.findOneAndUpdate(
+      { date: datePart },
+      { $inc: { sequence: 1 } },
+      { new: true, upsert: true }
+    );
 
-  const counter = await Counter.findOneAndUpdate(
-    { date: datePart },
-    { $inc: { sequence: 1 } },
-    { new: true, upsert: true }
-  );
+    const saleId = `S${datePart}-${String(counter.sequence).padStart(3, "0")}`;
 
-  const saleId = `S${datePart}-${String(counter.sequence).padStart(3, "0")}`;
-
-  // Convert items to Stripe's line_items format
-  const line_items = items.map((item) => ({
-    price_data: {
-      currency: "inr",
-      product_data: {
-        name: item.name,
-        metadata: { sku: item.sku },
+    // Convert items to Stripe's line_items format
+    const line_items = items.map((item) => ({
+      price_data: {
+        currency: "inr",
+        product_data: {
+          name: item.name,
+          metadata: { sku: item.sku },
+        },
+        unit_amount: Math.round(item.price * 100), // Stripe expects paise
       },
-      unit_amount: Math.round(item.price * 100), // Stripe expects paise
-    },
-    quantity: item.qty,
-  }));
+      quantity: item.qty,
+    }));
 
-  console.log(line_items, "line_items");
+    console.log(line_items, "line_items");
 
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ["card", "upi"],
-    line_items,
-    mode: "payment",
-    success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.FRONTEND_URL}/pos`,
-  });
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items,
+      mode: "payment",
+      success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_URL}/pos`,
+    });
 
-  await Sale.create({
-    saleId,
-    items,
-    total: items.reduce((sum, i) => sum + i.qty * i.price, 0),
-    paymentMethod: paymentMethod || "card", // or "upi"
-    paymentStatus: "pending",
-    paymentId: session.id,
-    createdBy: req.user._id,
-  });
+    await Sale.create({
+      saleId,
+      items,
+      total: items.reduce((sum, i) => sum + i.qty * i.price, 0),
+      paymentMethod: paymentMethod || "card", // or "upi"
+      paymentStatus: "pending",
+      paymentId: session.id,
+      createdBy: req.user._id,
+    });
 
-  console.log(session);
+    console.log(session);
 
-  res.status(200).json({ id: session.id, url: session.url });
-});
+    res.status(200).json({ id: session.id, url: session.url });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ message: error.message });
+  }
+};
 
 /**
  * Handles Stripe webhook events.
@@ -113,7 +117,6 @@ export const handleStripeWebhook = async (req, res) => {
     return res.status(200).json({ received: true });
   }
 };
-
 
 /**
  * Creates a new sale record in the database.
@@ -208,7 +211,6 @@ export const createSale = async (req, res, next) => {
     next(error); // handled by your global error middleware
   }
 };
-
 
 /**
  * Retrieves all sales from the database.

@@ -111,6 +111,7 @@ const POSPage = () => {
       }));
 
       if (paymentMethod === "card" || paymentMethod === "upi") {
+       
         const session = await initiateStripeCheckout(items, paymentMethod);
 
         if (!session?.url) {
