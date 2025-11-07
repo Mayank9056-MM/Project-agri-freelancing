@@ -2,6 +2,7 @@ import ScanPage from "@/pages/barcode/ScanPage";
 import Dashboard from "@/pages/Dashboard/Dashboard";
 import LowStock from "@/pages/Dashboard/LowStockList";
 import POSPage from "@/pages/POS/POSPage";
+import SuccessPage from "@/pages/POS/SuccessPage";
 import BulkUpload from "@/pages/Products/BulkUpload";
 import DeleteProduct from "@/pages/Products/DeleteProduct";
 import ProductDetail from "@/pages/Products/ProductDetail";
@@ -60,6 +61,12 @@ export const protectedRoutes = [
     element: <POSPage />,
     title: "Point of Sale",
     roles: ["cashier", "admin"],
+  },
+  {
+    path: "/success",
+    element: <SuccessPage />,
+    title: "Success Page",
+    role: ["cashier,admin"],
   },
   {
     path: "/bulk-upload",
