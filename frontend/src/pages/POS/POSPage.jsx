@@ -51,7 +51,7 @@ const POSPage = () => {
   const tax = (subtotal - discountAmount) * 0.18; // 18% tax
   const total = subtotal - discountAmount + tax;
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
     const savedCart = localStorage.getItem("pos_cart");
@@ -88,7 +88,7 @@ const POSPage = () => {
     setCustomerName("");
   };
 
-  const { createSale } = useContext(SaleContext);
+  const { createSale, initiateStripeCheckout } = useContext(SaleContext);
   const { products, getAllProducts, loading } = useContext(ProductContext);
 
   useEffect(() => {
@@ -109,6 +109,20 @@ const POSPage = () => {
         price: item.price,
         subtotal: item.price * item.quantity,
       }));
+
+      if (paymentMethod === "card" || paymentMethod === "upi") {
+       
+        const session = await initiateStripeCheckout(items, paymentMethod);
+
+        if (!session?.url) {
+          toast.error("Failed to initiate Stripe checkout");
+          return;
+        }
+
+        toast.success("Redirecting to secure payment...");
+        window.location.href = session.url;
+        return; // stop here, sale will complete after webhook
+      }
 
       const payload = {
         items,
@@ -146,40 +160,45 @@ const POSPage = () => {
 
   const quickDiscounts = [5, 10, 15, 20];
 
-const addToCart = (product) => {
-  setCart((prevCart) => {
-    const existingItem = prevCart.find((item) => item.sku === product.sku);
+  const addToCart = (product) => {
+    setCart((prevCart) => {
+      const existingItem = prevCart.find((item) => item.sku === product.sku);
 
-    if (existingItem) {
-      if (existingItem.quantity >= product.stock) {
-        setTimeout(() => toast.error(`Only ${product.stock} items in stock`), 0);
-        return prevCart;
+      if (existingItem) {
+        if (existingItem.quantity >= product.stock) {
+          setTimeout(
+            () => toast.error(`Only ${product.stock} items in stock`),
+            0
+          );
+          return prevCart;
+        }
+
+        setTimeout(
+          () => toast.success(`Quantity updated for ${product.name}`),
+          0
+        );
+        return prevCart.map((item) =>
+          item.sku === product.sku
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
       }
 
-      setTimeout(() => toast.success(`Quantity updated for ${product.name}`), 0);
-      return prevCart.map((item) =>
-        item.sku === product.sku
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      );
-    }
+      setTimeout(() => toast.success(`${product.name} added to cart`), 0);
 
-    setTimeout(() => toast.success(`${product.name} added to cart`), 0);
-
-    return [
-      ...prevCart,
-      {
-        id: product._id,
-        name: product.name,
-        sku: product.sku,
-        price: product.price,
-        quantity: 1,
-        stock: product.stock,
-      },
-    ];
-  });
-};
-
+      return [
+        ...prevCart,
+        {
+          id: product._id,
+          name: product.name,
+          sku: product.sku,
+          price: product.price,
+          quantity: 1,
+          stock: product.stock,
+        },
+      ];
+    });
+  };
 
   const filteredProducts = products?.filter(
     (product) =>

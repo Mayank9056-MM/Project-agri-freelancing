@@ -6,64 +6,79 @@ import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-export const initiateStripeCheckout = asyncHandler(async (req, res) => {
-  const { items } = req.body;
+export const initiateStripeCheckout = async (req, res) => {
+  try {
+    const { items, paymentMethod } = req.body;
 
-  console.log(items);
+    console.log(items, paymentMethod);
 
-  if (!items || !Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ message: "No items to checkout" });
-  }
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: "No items to checkout" });
+    }
 
-  const today = new Date();
-  const datePart = today.toISOString().split("T")[0].replace(/-/g, "");
+    const today = new Date();
+    const datePart = today.toISOString().split("T")[0].replace(/-/g, "");
 
-  const counter = await Counter.findOneAndUpdate(
-    { date: datePart },
-    { $inc: { sequence: 1 } },
-    { new: true, upsert: true, session }
-  );
+    const counter = await Counter.findOneAndUpdate(
+      { date: datePart },
+      { $inc: { sequence: 1 } },
+      { new: true, upsert: true }
+    );
 
-  const saleId = `S${datePart}-${String(counter.sequence).padStart(3, "0")}`;
+    const saleId = `S${datePart}-${String(counter.sequence).padStart(3, "0")}`;
 
-  // Convert items to Stripe's line_items format
-  const line_items = items.map((item) => ({
-    price_data: {
-      currency: "inr",
-      product_data: {
-        name: item.name,
-        metadata: { sku: item.sku },
+    // Convert items to Stripe's line_items format
+    const line_items = items.map((item) => ({
+      price_data: {
+        currency: "inr",
+        product_data: {
+          name: item.name,
+          metadata: { sku: item.sku },
+        },
+        unit_amount: Math.round(item.price * 100), // Stripe expects paise
       },
-      unit_amount: Math.round(item.price * 100), // Stripe expects paise
-    },
-    quantity: item.qty,
-  }));
+      quantity: item.qty,
+    }));
 
-  console.log(line_items, "line_items");
+    console.log(line_items, "line_items");
 
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ["card", "upi"],
-    line_items,
-    mode: "payment",
-    success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.FRONTEND_URL}/pos`,
-  });
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items,
+      mode: "payment",
+      success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_URL}/pos`,
+    });
 
-  await Sale.create({
-    saleId,
-    items,
-    total: items.reduce((sum, i) => sum + i.qty * i.price, 0),
-    paymentMethod: "card", // or "upi"
-    paymentStatus: "pending",
-    paymentId: session.id,
-    createdBy: req.user._id,
-  });
+    await Sale.create({
+      saleId,
+      items,
+      total: items.reduce((sum, i) => sum + i.qty * i.price, 0),
+      paymentMethod: paymentMethod || "card", // or "upi"
+      paymentStatus: "pending",
+      paymentId: session.id,
+      createdBy: req.user._id,
+    });
 
-  console.log(session);
+    console.log(session);
 
-  res.status(200).json({ id: session.id, url: session.url });
-});
+    res.status(200).json({ id: session.id, url: session.url });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ message: error.message });
+  }
+};
 
+/**
+ * Handles Stripe webhook events.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ *
+ * @returns {Promise<void>} A promise that resolves when the webhook is handled.
+ *
+ * @throws {Error} Error when the webhook is invalid.
+ */
 export const handleStripeWebhook = async (req, res) => {
   let event;
 
@@ -87,7 +102,7 @@ export const handleStripeWebhook = async (req, res) => {
 
     const purchaseItems = await Sale.findOne({
       paymentId: session.id,
-    }).populate("items");
+    });
 
     if (!purchaseItems) {
       return res.status(400).json({ message: "No items to checkout" });
@@ -96,14 +111,28 @@ export const handleStripeWebhook = async (req, res) => {
     purchaseItems.total = session.amount_total
       ? session.amount_total / 100
       : purchase.total;
-    purchase.paymentStatus = "paid";
+    purchaseItems.paymentStatus = "paid";
     await purchaseItems.save();
 
     return res.status(200).json({ received: true });
   }
 };
 
-// Create Sale
+/**
+ * Creates a new sale record in the database.
+ *
+ * @param {Object} req.body - The request body object.
+ * @param {Object} req.body.items - An array of objects containing the following:
+ *   - sku: The SKU of the product being sold.
+ *   - qty: The quantity of the product being sold.
+ *   - price: The unit price of the product being sold.
+ * @param {string} req.body.paymentMethod - The method of payment for the sale.
+ * @param {string} req.body.paymentStatus - The status of the payment for the sale.
+ *
+ * @returns {Promise<Object>} A promise that resolves with the created sale object.
+ *
+ * @throws {Error} Error when the sale is invalid (e.g. no items, insufficient stock).
+ */
 export const createSale = async (req, res, next) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -183,7 +212,16 @@ export const createSale = async (req, res, next) => {
   }
 };
 
-// Get all sales
+/**
+ * Retrieves all sales from the database.
+ *
+ * @returns {Promise<Object>} A promise that resolves with a JSON object containing the following:
+ *   - status: The status code of the response.
+ *   - sales: An array of sale objects.
+ *   - message: A message indicating the success of the operation.
+ *
+ * @throws {Error} Error when something goes wrong while fetching sales.
+ */
 export const getAllSales = async (req, res, next) => {
   try {
     const sales = await Sale.find()
