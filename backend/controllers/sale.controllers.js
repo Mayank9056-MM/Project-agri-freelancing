@@ -6,6 +6,7 @@ import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+
 export const initiateStripeCheckout = asyncHandler(async (req, res) => {
   const { items, paymentMethod } = req.body;
 
@@ -64,6 +65,16 @@ export const initiateStripeCheckout = asyncHandler(async (req, res) => {
   res.status(200).json({ id: session.id, url: session.url });
 });
 
+/**
+ * Handles Stripe webhook events.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ *
+ * @returns {Promise<void>} A promise that resolves when the webhook is handled.
+ *
+ * @throws {Error} Error when the webhook is invalid.
+ */
 export const handleStripeWebhook = async (req, res) => {
   let event;
 
@@ -103,7 +114,22 @@ export const handleStripeWebhook = async (req, res) => {
   }
 };
 
-// Create Sale
+
+/**
+ * Creates a new sale record in the database.
+ *
+ * @param {Object} req.body - The request body object.
+ * @param {Object} req.body.items - An array of objects containing the following:
+ *   - sku: The SKU of the product being sold.
+ *   - qty: The quantity of the product being sold.
+ *   - price: The unit price of the product being sold.
+ * @param {string} req.body.paymentMethod - The method of payment for the sale.
+ * @param {string} req.body.paymentStatus - The status of the payment for the sale.
+ *
+ * @returns {Promise<Object>} A promise that resolves with the created sale object.
+ *
+ * @throws {Error} Error when the sale is invalid (e.g. no items, insufficient stock).
+ */
 export const createSale = async (req, res, next) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -183,7 +209,17 @@ export const createSale = async (req, res, next) => {
   }
 };
 
-// Get all sales
+
+/**
+ * Retrieves all sales from the database.
+ *
+ * @returns {Promise<Object>} A promise that resolves with a JSON object containing the following:
+ *   - status: The status code of the response.
+ *   - sales: An array of sale objects.
+ *   - message: A message indicating the success of the operation.
+ *
+ * @throws {Error} Error when something goes wrong while fetching sales.
+ */
 export const getAllSales = async (req, res, next) => {
   try {
     const sales = await Sale.find()
