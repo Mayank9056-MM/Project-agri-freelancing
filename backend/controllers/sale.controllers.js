@@ -6,6 +6,20 @@ import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+/**
+ * Initiates a Stripe checkout session for the given items and payment method.
+ *
+ * @param {Object} req.body - The request body object.
+ * @param {Object} req.body.items - An array of objects containing the following:
+ *   - sku: The SKU of the product being sold.
+ *   - qty: The quantity of the product being sold.
+ *   - price: The unit price of the product being sold.
+ * @param {string} req.body.paymentMethod - The method of payment for the sale.
+ *
+ * @returns {Promise<Object>} A promise that resolves with the Stripe checkout session object.
+ *
+ * @throws {Error} - if something goes wrong while initiating the checkout
+ */
 export const initiateStripeCheckout = async (req, res) => {
   try {
     const { items, paymentMethod } = req.body;
@@ -209,6 +223,36 @@ export const createSale = async (req, res, next) => {
     await session.abortTransaction();
     session.endSession();
     next(error); // handled by your global error middleware
+  }
+};
+
+/**
+ * Retrieves the status of a sale.
+ *
+ * @param {string} req.params.saleId - The ID of the sale to be fetched.
+ * @param {string} req.user._id - The ID of the user making the request.
+ * @returns {Promise<Object>} A promise that resolves with an object containing the status of the sale.
+ * @throws {Error} - if something goes wrong while fetching the sale
+ */
+export const getSaleStatus = async (req, res) => {
+  try {
+    const { saleId } = req.params;
+    const userId = req.user._id;
+
+    if (!saleId) {
+      return res.status(304).json({ message: "saleId is required" });
+    }
+
+    const sale = await Sale.findOne({ saleId, createdBy: userId });
+
+    if (!sale) {
+      return res.status(404).json({ message: "Sale not found" });
+    }
+
+    return res.status(200).json({ status: sale.paymentStatus });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ message: error.message });
   }
 };
 

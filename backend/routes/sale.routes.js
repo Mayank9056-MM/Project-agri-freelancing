@@ -3,6 +3,7 @@ import { verifyAuth } from "../middlewares/auth.middleware.js";
 import {
   createSale,
   getAllSales,
+  getSaleStatus,
   handleStripeWebhook,
   initiateStripeCheckout,
 } from "../controllers/sale.controllers.js";
@@ -12,6 +13,8 @@ const saleRouter = express.Router();
 saleRouter
   .route("/checkout/create-checkout-session")
   .post(verifyAuth, initiateStripeCheckout);
+
+saleRouter.route("/verify-payment/:id").get(verifyAuth, getSaleStatus);
 
 saleRouter
   .route("/webhook")
