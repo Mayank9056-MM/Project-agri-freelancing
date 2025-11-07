@@ -7,9 +7,9 @@ import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const initiateStripeCheckout = asyncHandler(async (req, res) => {
-  const { items } = req.body;
+  const { items, paymentMethod } = req.body;
 
-  console.log(items);
+  console.log(items, paymentMethod);
 
   if (!items || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ message: "No items to checkout" });
@@ -21,7 +21,7 @@ export const initiateStripeCheckout = asyncHandler(async (req, res) => {
   const counter = await Counter.findOneAndUpdate(
     { date: datePart },
     { $inc: { sequence: 1 } },
-    { new: true, upsert: true, session }
+    { new: true, upsert: true }
   );
 
   const saleId = `S${datePart}-${String(counter.sequence).padStart(3, "0")}`;
@@ -53,7 +53,7 @@ export const initiateStripeCheckout = asyncHandler(async (req, res) => {
     saleId,
     items,
     total: items.reduce((sum, i) => sum + i.qty * i.price, 0),
-    paymentMethod: "card", // or "upi"
+    paymentMethod: paymentMethod || "card", // or "upi"
     paymentStatus: "pending",
     paymentId: session.id,
     createdBy: req.user._id,
@@ -87,7 +87,7 @@ export const handleStripeWebhook = async (req, res) => {
 
     const purchaseItems = await Sale.findOne({
       paymentId: session.id,
-    }).populate("items");
+    });
 
     if (!purchaseItems) {
       return res.status(400).json({ message: "No items to checkout" });
@@ -96,7 +96,7 @@ export const handleStripeWebhook = async (req, res) => {
     purchaseItems.total = session.amount_total
       ? session.amount_total / 100
       : purchase.total;
-    purchase.paymentStatus = "paid";
+    purchaseItems.paymentStatus = "paid";
     await purchaseItems.save();
 
     return res.status(200).json({ received: true });
