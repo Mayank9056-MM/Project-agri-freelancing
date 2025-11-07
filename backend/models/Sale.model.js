@@ -51,9 +51,12 @@ const saleSchema = new mongoose.Schema(
       enum: ["cash", "upi", "card", "bank"],
       required: true,
     },
+    paymentId: {
+     type: String
+    },
     paymentStatus: {
       type: String,
-      enum: ["paid", "pending"],
+      enum: ["paid", "pending","cancelled"],
       default: "paid",
     },
     createdBy: {

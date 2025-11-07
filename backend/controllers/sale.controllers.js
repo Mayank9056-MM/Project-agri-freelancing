@@ -2,6 +2,106 @@ import mongoose from "mongoose";
 import Sale from "../models/Sale.model.js";
 import Product from "../models/Product.model.js";
 import Counter from "../models/Counter.model.js"; // for saleId counter
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+export const initiateStripeCheckout = asyncHandler(async (req, res) => {
+  const { items } = req.body;
+
+  console.log(items);
+
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ message: "No items to checkout" });
+  }
+
+  const today = new Date();
+  const datePart = today.toISOString().split("T")[0].replace(/-/g, "");
+
+  const counter = await Counter.findOneAndUpdate(
+    { date: datePart },
+    { $inc: { sequence: 1 } },
+    { new: true, upsert: true, session }
+  );
+
+  const saleId = `S${datePart}-${String(counter.sequence).padStart(3, "0")}`;
+
+  // Convert items to Stripe's line_items format
+  const line_items = items.map((item) => ({
+    price_data: {
+      currency: "inr",
+      product_data: {
+        name: item.name,
+        metadata: { sku: item.sku },
+      },
+      unit_amount: Math.round(item.price * 100), // Stripe expects paise
+    },
+    quantity: item.qty,
+  }));
+
+  console.log(line_items, "line_items");
+
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card", "upi"],
+    line_items,
+    mode: "payment",
+    success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.FRONTEND_URL}/pos`,
+  });
+
+  await Sale.create({
+    saleId,
+    items,
+    total: items.reduce((sum, i) => sum + i.qty * i.price, 0),
+    paymentMethod: "card", // or "upi"
+    paymentStatus: "pending",
+    paymentId: session.id,
+    createdBy: req.user._id,
+  });
+
+  console.log(session);
+
+  res.status(200).json({ id: session.id, url: session.url });
+});
+
+export const handleStripeWebhook = async (req, res) => {
+  let event;
+
+  try {
+    const payloadString = JSON.stringify(req.body, null, 2);
+    const secret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    const header = stripe.webhooks.generateTestHeaderString({
+      payload: payloadString,
+      secret,
+    });
+
+    event = stripe.webhooks.constructEvent(payloadString, header, secret);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json(`Webhook Error: ${error.message}`);
+  }
+
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
+
+    const purchaseItems = await Sale.findOne({
+      paymentId: session.id,
+    }).populate("items");
+
+    if (!purchaseItems) {
+      return res.status(400).json({ message: "No items to checkout" });
+    }
+
+    purchaseItems.total = session.amount_total
+      ? session.amount_total / 100
+      : purchase.total;
+    purchase.paymentStatus = "paid";
+    await purchaseItems.save();
+
+    return res.status(200).json({ received: true });
+  }
+};
 
 // Create Sale
 export const createSale = async (req, res, next) => {
