@@ -227,23 +227,25 @@ export const createSale = async (req, res, next) => {
 };
 
 /**
- * Retrieves the status of a sale.
+ * Retrieves the status of a sale by its paymentId.
  *
- * @param {string} req.params.saleId - The ID of the sale to be fetched.
- * @param {string} req.user._id - The ID of the user making the request.
+ * @param {object} req - The request object.
+ * @param {object} res - The response object.
+ *
  * @returns {Promise<Object>} A promise that resolves with an object containing the status of the sale.
- * @throws {Error} - if something goes wrong while fetching the sale
+ *
+ * @throws {Error} - if something goes wrong while retrieving the sale
  */
 export const getSaleStatus = async (req, res) => {
   try {
-    const { saleId } = req.params;
+    const paymentId = req.params.id;
     const userId = req.user._id;
 
-    if (!saleId) {
-      return res.status(304).json({ message: "saleId is required" });
+    if (!paymentId) {
+      return res.status(304).json({ message: "paymentId is required" });
     }
 
-    const sale = await Sale.findOne({ saleId, createdBy: userId });
+    const sale = await Sale.findOne({ paymentId, createdBy: userId });
 
     if (!sale) {
       return res.status(404).json({ message: "Sale not found" });

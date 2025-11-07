@@ -14,7 +14,6 @@ export const getAllSalesApi = async () => {
   }
 };
 
-
 /**
  * Creates a new sale in the database.
  *
@@ -52,6 +51,24 @@ export const initiateStripeCheckoutApi = async (items, PaymentMethod) => {
       items,
       PaymentMethod,
     });
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+/**
+ * Retrieves the status of a sale by its ID.
+ *
+ * @param {string} id - The ID of the sale to be fetched.
+ *
+ * @returns {Promise<Object>} A promise that resolves with an object containing the status of the sale.
+ *
+ * @throws {Error} - if something goes wrong while fetching the sale
+ */
+export const getSaleStatusApi = async (id) => {
+  try {
+    const res = await api.get(`sale/verify-payment/${id}`);
     return res.data;
   } catch (error) {
     console.log(error);

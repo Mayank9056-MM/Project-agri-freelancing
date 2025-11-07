@@ -1,6 +1,7 @@
 import {
   createSaleApi,
   getAllSalesApi,
+  getSaleStatusApi,
   initiateStripeCheckoutApi,
 } from "@/services/saleService";
 import { createContext } from "react";
@@ -63,7 +64,6 @@ export const SaleProvider = ({ children }) => {
    * @throws {Error} - if something goes wrong while initiating the checkout
    */
   const initiateStripeCheckout = async (items, PaymentMethod) => {
-    
     try {
       const res = await initiateStripeCheckoutApi(items, PaymentMethod);
       console.log(res);
@@ -73,10 +73,20 @@ export const SaleProvider = ({ children }) => {
     }
   };
 
+  const getSaleStatus = async (id) => {
+    try {
+      const data = await getSaleStatusApi(id);
+      return data;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const value = {
     getAllSales,
     createSale,
     initiateStripeCheckout,
+    getSaleStatus,
   };
 
   return <SaleContext.Provider value={value}>{children}</SaleContext.Provider>;

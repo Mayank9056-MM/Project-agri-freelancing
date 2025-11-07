@@ -1,23 +1,29 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
+import { SaleContext } from "@/context/SaleContext";
 
 const SuccessPage = () => {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const [status, setStatus] = useState("loading");
   const navigate = useNavigate();
+  const { getSaleStatus } = useContext(SaleContext);
 
   useEffect(() => {
-    if (sessionId) {
-      // Optional: Verify the payment session with your backend
-      fetch(`${import.meta.env.VITE_BACKEND_URL}/api/v1/sale/verify-payment?session_id=${sessionId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setStatus("success");
-        })
-        .catch(() => setStatus("error"));
-    }
+    const fetchSaleStatus = async () => {
+      if (!sessionId) return;
+
+      try {
+        const data = await getSaleStatus(sessionId);
+        console.log(data)
+        setStatus(data.paymentStatus);
+      } catch (error) {
+        console.error("Failed to fetch sale status:", error);
+      }
+    };
+
+    fetchSaleStatus();
   }, [sessionId]);
 
   if (status === "loading") return <p>Processing your payment...</p>;
