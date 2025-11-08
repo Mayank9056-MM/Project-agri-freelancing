@@ -24,14 +24,16 @@ export const ProductProvider = ({ children }) => {
    * @returns {Promise<void>} A promise that resolves when all products have been retrieved.
    */
   const getAllProducts = async () => {
-    setLoading(true);
-    await getAllProductApi()
-      .then((res) => {
-        setProducts(res?.products);
-        console.log(res);
-      })
-      .catch((err) => console.log(err))
-      .finally(() => setLoading(false));
+    try {
+      setLoading(true);
+      const res = await getAllProductApi();
+      setProducts(res.products || []);
+      return res.products;
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   /**
