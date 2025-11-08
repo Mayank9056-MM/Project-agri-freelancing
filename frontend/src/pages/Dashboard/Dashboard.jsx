@@ -48,6 +48,18 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    /**
+     * Fetches all data required for the dashboard page:
+     * - sales data from the SaleContext
+     * - products data from the ProductContext
+     * - low stock products data from the ProductContext
+     *
+     * Sets the state variables for sales, products, and low stock products
+     *
+     * Catch any errors that occur while fetching the data and log them to the console
+     *
+     * Finally, sets the loading state variable to false
+     */
     const fetchDashboardData = async () => {
       try {
         const [salesRes, productsRes, lowRes] = await Promise.all([
@@ -100,27 +112,26 @@ const Dashboard = () => {
   const totalLowStock = lowStock.length;
 
   // --- Compute top selling products ---
-const productSalesMap = {};
-
-sales.forEach((sale) => {
-  sale.items?.forEach((item) => {
-    const id = item.product?._id || item.product; // handle populated or ID
-    if (!productSalesMap[id]) {
-      productSalesMap[id] = {
-        name: item.product?.name || "Unknown Product",
-        sold: 0,
-        revenue: 0,
-      };
-    }
-    productSalesMap[id].sold += item.quantity || 0;
-    productSalesMap[id].revenue += (item.quantity || 0) * (item.price || 0);
+  const productSalesMap = {};
+  console.log(sales);
+  sales.forEach((sale) => {
+    sale.items?.forEach((item) => {
+      const id = item?.sku; // handle populated or ID
+      if (!productSalesMap[id]) {
+        productSalesMap[id] = {
+          name: item?.name || "Unknown Product",
+          sold: 0,
+          revenue: 0,
+        };
+      }
+      productSalesMap[id].sold += item.qty || 0;
+      productSalesMap[id].revenue += (item.qty || 0) * (item.price || 0);
+    });
   });
-});
 
-const topProducts = Object.values(productSalesMap)
-  .sort((a, b) => b.sold - a.sold)
-  .slice(0, 5);
-
+  const topProducts = Object.values(productSalesMap)
+    .sort((a, b) => b.sold - a.sold)
+    .slice(0, 5);
 
   const stats = [
     {
@@ -170,12 +181,14 @@ const topProducts = Object.values(productSalesMap)
     { name: "Low Stock", value: lowStockCount, color: "#f59e0b" },
     { name: "Out of Stock", value: outOfStockCount, color: "#ef4444" },
   ];
-
+  {
+    console.log(sales);
+  }
   const recentSales = sales.slice(0, 5).map((s) => ({
-    id: s.saleId,
+    id: s._id?.slice(-5).toUpperCase(),
     customer: s.createdBy?.email || "Guest",
     items: s.items?.length || 0,
-    amount: s.total,
+    amount: s.total.toFixed(2),
     payment: s.paymentMethod,
     time: new Date(s.createdAt).toLocaleTimeString(),
   }));
@@ -220,21 +233,21 @@ const topProducts = Object.values(productSalesMap)
   };
 
   if (loading) {
-  return (
-    <div className="flex items-center justify-center h-[70vh] text-gray-500">
-      Loading dashboard data...
-    </div>
-  );
-}
+    return (
+      <div className="flex items-center justify-center h-[70vh] text-gray-500">
+        Loading dashboard data...
+      </div>
+    );
+  }
 
-if (!sales.length && !products.length) {
-  return (
-    <div className="flex flex-col items-center justify-center h-[70vh] text-gray-500">
-      <AlertCircle className="w-8 h-8 mb-3 text-gray-400" />
-      <p>No sales or products data available yet.</p>
-    </div>
-  );
-}
+  if (!sales.length && !products.length) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[70vh] text-gray-500">
+        <AlertCircle className="w-8 h-8 mb-3 text-gray-400" />
+        <p>No sales or products data available yet.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -533,22 +546,22 @@ if (!sales.length && !products.length) {
                     >
                       {product.name}
                     </p>
-                    {/* <p
+                    <p
                       className={`text-sm ${
                         isDark ? "text-gray-400" : "text-gray-600"
                       }`}
                     >
                       {product.sold} units sold
-                    </p> */}
+                    </p>
                   </div>
                   <div className="text-right">
-                    {/* <p
+                    <p
                       className={`font-bold ${
                         isDark ? "text-emerald-400" : "text-emerald-600"
                       }`}
                     >
-                      ${product.revenue.toLocaleString()}
-                    </p> */}
+                      ₹{product.revenue.toLocaleString()}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -575,6 +588,7 @@ if (!sales.length && !products.length) {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
+              {console.log(recentSales)}
               {recentSales.map((sale) => (
                 <div
                   key={sale.id}
@@ -621,7 +635,7 @@ if (!sales.length && !products.length) {
                         isDark ? "text-white" : "text-gray-900"
                       }`}
                     >
-                      ${sale.amount}
+                      ₹{sale.amount}
                     </p>
                     <p
                       className={`text-xs ${
