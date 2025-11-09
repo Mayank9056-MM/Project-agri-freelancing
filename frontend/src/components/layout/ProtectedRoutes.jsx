@@ -4,8 +4,13 @@ import { Navigate, useLocation } from "react-router-dom";
 import { AuthContext } from "@/context/AuthContext";
 
 const ProtectedRoute = ({ children, roles }) => {
-  const { user } = useContext(AuthContext);
+  const { user,loading } = useContext(AuthContext);
   const location = useLocation();
+
+  // Wait until auth state is resolved
+  if (loading) {
+    return <div className="text-center mt-10">Loading...</div>;
+  }
 
   if (!user) {
     return <Navigate to="/login" replace state={{ from: location }} />;

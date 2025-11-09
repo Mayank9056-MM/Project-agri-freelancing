@@ -24,7 +24,7 @@ import { ThemeContext } from "@/context/ThemeContext";
 import { Navigate, useNavigate } from "react-router-dom";
 import { ProductContext } from "@/context/ProductContext";
 
-const ProductList = ({ onView }) => {
+const ProductList = () => {
   const { theme } = useContext(ThemeContext);
   const isDark = theme === "dark";
 
@@ -102,6 +102,10 @@ const ProductList = ({ onView }) => {
       return <TrendingDown className="h-4 w-4" />;
     return <TrendingUp className="h-4 w-4" />;
   };
+
+  const onView = (product) => {
+    navigate(`/products/${product.sku}`);
+  }
 
   return (
     <div className="space-y-6">
@@ -264,7 +268,7 @@ const ProductList = ({ onView }) => {
           const status = getProductStatus(product);
           return (
             <Card
-              onClick={() => navigate(`/products/${product._id}`)}
+              onClick={() => navigate(`/products/${product.sku}`)}
               key={product._id}
               className={`border-0 overflow-hidden group hover:scale-105 transition-all duration-300 cursor-pointer ${
                 isDark

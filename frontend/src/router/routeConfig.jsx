@@ -51,10 +51,13 @@ export const protectedRoutes = [
     roles: ["admin"],
   },
   {
-    path: "/product/:sku",
+    path: "/products/:sku",
     element: <ProductDetail />,
     title: "Product Details",
     roles: ["admin"],
+  },
+  {
+   path: "/pro"
   },
   {
     path: "/pos",

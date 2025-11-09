@@ -33,6 +33,7 @@ export const AuthProvider = ({ children }) => {
      */
     const fetchUser = async () => {
       try {
+        setLoading(true)
         const savedUser = localStorage.getItem("user");
 
         if (savedUser) {
