@@ -23,6 +23,8 @@ import {
 import { ThemeContext } from "@/context/ThemeContext";
 import { AuthContext } from "@/context/AuthContext";
 import { ProductContext } from "@/context/ProductContext";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const LowStock = () => {
   const { theme } = useContext(ThemeContext);
@@ -53,114 +55,9 @@ const LowStock = () => {
     fetchLowStock();
   }, []);
 
-  // // Mock data - replace with actual API data
-  // const lowStockItems = [
-  //   {
-  //     id: 1,
-  //     sku: "LAP-001",
-  //     name: "Dell XPS 15 Laptop",
-  //     currentStock: 3,
-  //     minStock: 10,
-  //     reorderPoint: 8,
-  //     price: 1299,
-  //     category: "Electronics",
-  //     supplier: "Dell Inc.",
-  //     lastRestocked: "2024-10-15",
-  //     status: "critical",
-  //   },
-  //   {
-  //     id: 2,
-  //     sku: "PHN-102",
-  //     name: "iPhone 15 Pro",
-  //     currentStock: 5,
-  //     minStock: 15,
-  //     reorderPoint: 12,
-  //     price: 999,
-  //     category: "Smartphones",
-  //     supplier: "Apple",
-  //     lastRestocked: "2024-10-20",
-  //     status: "low",
-  //   },
-  //   {
-  //     id: 3,
-  //     sku: "TAB-205",
-  //     name: "iPad Air",
-  //     currentStock: 2,
-  //     minStock: 8,
-  //     reorderPoint: 6,
-  //     price: 599,
-  //     category: "Tablets",
-  //     supplier: "Apple",
-  //     lastRestocked: "2024-10-18",
-  //     status: "critical",
-  //   },
-  //   {
-  //     id: 4,
-  //     sku: "HDP-301",
-  //     name: "Sony WH-1000XM5",
-  //     currentStock: 7,
-  //     minStock: 20,
-  //     reorderPoint: 15,
-  //     price: 399,
-  //     category: "Audio",
-  //     supplier: "Sony",
-  //     lastRestocked: "2024-10-25",
-  //     status: "low",
-  //   },
-  //   {
-  //     id: 5,
-  //     sku: "MON-403",
-  //     name: "LG UltraWide Monitor",
-  //     currentStock: 1,
-  //     minStock: 6,
-  //     reorderPoint: 5,
-  //     price: 799,
-  //     category: "Monitors",
-  //     supplier: "LG Electronics",
-  //     lastRestocked: "2024-10-12",
-  //     status: "critical",
-  //   },
-  //   {
-  //     id: 6,
-  //     sku: "KBD-501",
-  //     name: "Logitech MX Keys",
-  //     currentStock: 8,
-  //     minStock: 25,
-  //     reorderPoint: 18,
-  //     price: 99,
-  //     category: "Accessories",
-  //     supplier: "Logitech",
-  //     lastRestocked: "2024-10-28",
-  //     status: "low",
-  //   },
-  //   {
-  //     id: 7,
-  //     sku: "MSE-502",
-  //     name: "Logitech MX Master 3S",
-  //     currentStock: 4,
-  //     minStock: 20,
-  //     reorderPoint: 15,
-  //     price: 99,
-  //     category: "Accessories",
-  //     supplier: "Logitech",
-  //     lastRestocked: "2024-10-22",
-  //     status: "low",
-  //   },
-  //   {
-  //     id: 8,
-  //     sku: "CAM-601",
-  //     name: "Logitech Brio 4K Webcam",
-  //     currentStock: 2,
-  //     minStock: 10,
-  //     reorderPoint: 8,
-  //     price: 199,
-  //     category: "Accessories",
-  //     supplier: "Logitech",
-  //     lastRestocked: "2024-10-10",
-  //     status: "critical",
-  //   },
-  // ];
 
+
+ 
   const stats = [
     {
       title: "Critical Items",
@@ -240,6 +137,41 @@ const LowStock = () => {
     return matchesSearch && matchesFilter;
   });
 
+  const handleExport = () => {
+  if (!lowStockItems.length) {
+    alert("No data to export!");
+    return;
+  }
+
+  const exportData = lowStockItems.map(item => ({
+    SKU: item.sku,
+    Name: item.name,
+    "Current Stock": item.currentStock,
+    "Minimum Stock": item.minStock,
+    "Reorder Point": item.reorderPoint,
+    Status: item.status,
+    Category: item.category,
+    Supplier: item.supplier,
+    "Last Restocked": new Date(item.lastRestocked).toLocaleDateString(),
+    Price: item.price,
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(exportData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Low Stock");
+
+  const excelBuffer = XLSX.write(workbook, {
+    bookType: "xlsx",
+    type: "array",
+  });
+
+  saveAs(
+    new Blob([excelBuffer], { type: "application/octet-stream" }),
+    "low_stock_report.xlsx"
+  );
+};
+
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -266,6 +198,7 @@ const LowStock = () => {
         <div className="flex items-center gap-3">
           <Button
             variant="outline"
+              onClick={() => handleExport()}
             className={`${
               isDark
                 ? "bg-gray-800 border-gray-700 hover:bg-gray-700"
