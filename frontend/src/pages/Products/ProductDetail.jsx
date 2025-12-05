@@ -145,7 +145,7 @@ const ProductDetails = () => {
               >
                 {product.image ? (
                   <span role="img" aria-label="product" className="text-8xl">
-                    {product.image}
+                   <img src={product?.image} alt="" />
                   </span>
                 ) : (
                   <ImageIcon className="h-20 w-20 text-gray-400" />
