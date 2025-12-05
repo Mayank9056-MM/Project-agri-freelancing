@@ -270,60 +270,71 @@ export const bulkUploadProducts = async (req, res) => {
   }
 };
 
+
 /**
- * Retrieves all products with low stock from the database.
- *
- * Low stock is defined as products with stock < low_stock_threshold
- *
- * Critical stock is defined as products with stock <= low_stock_threshold / 2
- *
- * @returns {Promise<object[]>} A promise that resolves with an array of product objects with low stock.
- * @throws {Error} - if something goes wrong while fetching products
+ * Retrieves all products with low stock (i.e. stock < low_stock_threshold)
+ * and sorts them by their stock in ascending order.
+ * 
+ * For each product, the following fields are returned:
+ *   - id
+ *   - sku
+ *   - name
+ *   - currentStock
+ *   - minStock (i.e. low_stock_threshold)
+ *   - reorderPoint (i.e. 0.8 * low_stock_threshold)
+ *   - price
+ *   - category
+ *   - supplier
+ *   - lastRestocked (i.e. updated_at)
+ *   - status (i.e. low or critical)
+ * 
+ * If a product's stock is less than or equal to half of its low stock threshold,
+ * it is marked as "critical". Otherwise, it is marked as "low".
+ * 
+ * If a product's alertSent field is false, an email is sent to the admin
+ * and the field is set to true.
+ * 
+ * @returns {Promise<Object>} A promise that resolves with a JSON object containing
+ * the fetched products and a success message.
+ * 
+ * @throws {Error} If something goes wrong while fetching products.
  */
 export const getLowStockProducts = async (req, res, next) => {
   try {
-    // ✅ Find products where stock < low_stock_threshold
     const products = await Product.find({
-      $expr: { $lt: ["$stock", "$low_stock_threshold"] },
+      $expr: { $lt: ["$stock", "$low_stock_threshold"] }
     }).sort({ stock: 1 });
 
-    // if (products.length === 0) {
-    //   return res.status(200).json({
-    //     status: 200,
-    //     message: "No low stock products found",
-    //     products: [],
-    //   });
-    // }
+    const mapped = await Promise.all(
+      products.map(async (p) => {
+        let status = "low";
+        if (p.stock <= p.low_stock_threshold / 2) status = "critical";
 
-    // ✅ Map data to the format your frontend expects
-    const mapped = products.map(async (p) => {
-      let status = "low";
-      // Critical = less than half the threshold
-      if (p.stock <= p.low_stock_threshold / 2) status = "critical";
+        // Send email only once
+        if (!p.alertSent) {
+          await sendLowStockEmail(p);
+          p.alertSent = true;
+          await p.save();
+        }
 
-      if (!p.alertSent) {
-        await sendLowStockEmail(p);
-        p.alertSent = true;
-        await p.save();
-      }
-
-      return {
-        id: p._id,
-        sku: p.sku,
-        name: p.name,
-        currentStock: p.stock,
-        minStock: p.low_stock_threshold, // renamed field for compatibility
-        reorderPoint: Math.round(p.low_stock_threshold * 0.8), // estimate
-        price: p.price,
-        category: p.category || "General",
-        supplier: p.supplier || "Unknown",
-        lastRestocked: p.updatedAt,
-        status,
-      };
-    });
+        return {
+          id: p._id,
+          sku: p.sku,
+          name: p.name,
+          currentStock: p.stock,
+          minStock: p.low_stock_threshold,
+          reorderPoint: Math.round(p.low_stock_threshold * 0.8),
+          price: p.price,
+          category: p.category,
+          supplier: p.supplier || "Unknown",
+          lastRestocked: p.updatedAt,
+          status,
+        };
+      })
+    );
 
     res.status(200).json({
-      status: 200,
+      success: true,
       message: "Low stock products fetched successfully",
       products: mapped,
     });
@@ -331,6 +342,7 @@ export const getLowStockProducts = async (req, res, next) => {
     next(error);
   }
 };
+
 
 /**
  * Retrieves a product by its barcode.
