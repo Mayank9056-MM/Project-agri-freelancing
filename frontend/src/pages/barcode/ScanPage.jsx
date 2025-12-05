@@ -22,6 +22,7 @@ const ScanPage = () => {
   const [scannedResult, setScannedResult] = useState("");
   const [isScanning, setIsScanning] = useState(false);
   const [product, setProduct] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const reader = new BrowserMultiFormatReader();
@@ -61,9 +62,15 @@ const ScanPage = () => {
             setScannedResult(code);
             stopScanner();
 
-            getProductFromBarcode(code)
-              .then((data) => setProduct(data))
-              .catch((err) => console.error(err));
+            getProductFromBarcode(code).then((res) => {
+              if (res.success) {
+                setProduct(res.product);
+              } else {
+                setProduct(null);
+                setScannedResult(code);
+                setErrorMessage(res.message); // NEW
+              }
+            });
           }
         }
       );
@@ -212,6 +219,17 @@ const ScanPage = () => {
                     >
                       {scannedResult}
                     </p>
+                    {errorMessage && (
+                      <div
+                        className={`p-4 mt-4 rounded-xl border text-red-500 font-semibold ${
+                          isDark
+                            ? "bg-red-900/40 border-red-700/50"
+                            : "bg-red-50 border-red-200"
+                        }`}
+                      >
+                        ❌ {errorMessage}
+                      </div>
+                    )}
                   </div>
                   {product && (
                     <div
