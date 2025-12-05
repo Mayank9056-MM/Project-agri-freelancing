@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  // useEffect(() => {
     /**
      * Fetches the current user from local storage or the API.
      * If the user is found in local storage, it is parsed and set as the current user.
@@ -31,54 +31,91 @@ export const AuthProvider = ({ children }) => {
      * If the API call fails, the current user is set to null and the user is removed from local storage.
      * Finally, the loading state is set to false.
      */
-    const fetchUser = async () => {
-      try {
-        setLoading(true)
-        const savedUser = localStorage.getItem("user");
+  //   const fetchUser = async () => {
+  //     try {
+  //       setLoading(true)
+  //       const savedUser = localStorage.getItem("user");
 
-        if (savedUser) {
-          setUser(JSON.parse(savedUser));
-        } else {
-          const res = await getCurrentUserApi();
-          const currentUser = res.user;
-          if (currentUser) {
-            setUser(currentUser);
+  //       if (savedUser) {
+  //         setUser(JSON.parse(savedUser));
+  //       } else {
+  //         const res = await getCurrentUserApi();
+  //         const currentUser = res.user;
+  //         if (currentUser) {
+  //           setUser(currentUser);
 
-            localStorage.setItem("user", JSON.stringify(currentUser));
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch current user:", err);
-        setUser(null);
-        localStorage.removeItem("user");
-      } finally {
-        setLoading(false);
-      }
-    };
+  //           localStorage.setItem("user", JSON.stringify(currentUser));
+  //         }
+  //       }
+  //     } catch (err) {
+  //       console.error("Failed to fetch current user:", err);
+  //       setUser(null);
+  //       localStorage.removeItem("user");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchUser();
-  }, []);
+  //   fetchUser();
+  // }, []);
+
+  useEffect(() => {
+  const initAuth = async () => {
+    setLoading(true);
+
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await getCurrentUserApi();
+      setUser(res.user);
+
+      localStorage.setItem("user", JSON.stringify(res.user));
+    } catch (err) {
+      console.error("Token invalid -> Logout");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  initAuth();
+}, []);
+
 
   useEffect(() => {
     console.log("Updated user:", user);
   }, [user]);
 
-  /**
-   * Logs in a user to the application.
-   *
-   * @param {object} credentials - An object containing the following:
-   *   - email: The email address of the user.
-   *   - password: The password of the user.
-   * @returns {Promise<object>} A promise that resolves with the user data if the login is successful.
-   */
-  const login = async (credentials) => {
-    const res = await loginApi(credentials);
-    const userData = res.data;
 
-    setUser(userData);
+/**
+ * Logs in a user to the application.
+ *
+ * @param {object} credentials - An object containing the following:
+ *   - email: The email address of the user.
+ *   - password: The password of the user.
+ * @returns {Promise<object>} A promise that resolves with the logged in user data.
+ * @throws {Error} - if something goes wrong while logging in the user
+ */
+ const login = async (credentials) => {
+  const res = await loginApi(credentials);
 
-    return userData;
-  };
+  const { user, accessToken } = res.data;
+
+  localStorage.setItem("accessToken", accessToken);
+  localStorage.setItem("user", JSON.stringify(user));
+
+  setUser(user);
+
+  return user;
+};
+
 
   /**
    * Registers a new user to the application.
@@ -105,14 +142,12 @@ export const AuthProvider = ({ children }) => {
    *
    * @returns {Promise<void>} A promise that resolves when the user has been logged out.
    */
-  const logout = async () => {
-    try {
-      await logoutApi();
-    } finally {
-      localStorage.removeItem("user");
-      setUser(null);
-    }
-  };
+const logout = async () => {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("user");
+  setUser(null);
+};
+
 
   const getAllUsers = async () => {
     try {

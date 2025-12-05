@@ -5,6 +5,14 @@ const api = axios.create({
   withCredentials: true,
 });
 
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("accessToken");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // 🔹 Handle 401 errors globally
 api.interceptors.response.use(
   (res) => res,
@@ -16,5 +24,7 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+
 
 export default api;

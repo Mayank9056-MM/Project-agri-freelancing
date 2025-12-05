@@ -12,6 +12,10 @@ const ProtectedRoute = ({ children, roles }) => {
     return <div className="text-center mt-10">Loading...</div>;
   }
 
+  if (!localStorage.getItem("accessToken")) {
+  return <Navigate to="/login" replace />;
+}
+
   if (!user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
