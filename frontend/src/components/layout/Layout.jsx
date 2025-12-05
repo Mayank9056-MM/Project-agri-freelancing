@@ -22,12 +22,14 @@ import { AuthContext } from "@/context/AuthContext";
 import { ThemeContext } from "@/context/ThemeContext";
 import toast from "react-hot-toast";
 import { ProductContext } from "@/context/ProductContext";
+import { protectedRoutes } from "@/router/routeConfig";
+
 
 const Layout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [userRole] = useState("admin");
-  const { theme, toggleTheme } = useContext(ThemeContext);
   const { logout, user } = useContext(AuthContext);
+  const userRole = user?.role;
+  const { theme, toggleTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [lowStockCount, setLowStockCount] = useState(0);
@@ -54,6 +56,9 @@ const Layout = () => {
 
   const NavItem = ({ icon: Icon, label, path, badge }) => {
     const isActive = location.pathname === path;
+
+
+
 
     return (
       <div>
@@ -83,6 +88,33 @@ const Layout = () => {
       </div>
     );
   };
+
+      const sidebarMenu = protectedRoutes.filter((route) =>
+      route.roles?.includes(userRole)
+    );
+
+    const getIcon = (title) => {
+  switch (title) {
+    case "Dashboard":
+      return BarChart3;
+    case "POS / Billing":
+      return ShoppingCart;
+    case "Products":
+      return Package;
+    case "Bulk Upload":
+      return Upload;
+    case "Sales Report":
+      return FileText;
+    case "Low Stock":
+      return AlertCircle;
+    case "User Management":
+      return Users;
+    case "Scan":
+      return Camera;
+    default:
+      return FileText;
+  }
+};
 
   return (
     <div
@@ -258,21 +290,15 @@ const Layout = () => {
                 </Button>
               </div>
             </div>
-
-            <NavItem icon={BarChart3} label="Dashboard" path="/" />
-            <NavItem icon={ShoppingCart} label="POS / Billing" path="/pos" />
-            <NavItem icon={Package} label="Products" path="/products" />
-            <NavItem icon={Upload} label="Bulk Upload" path="/bulk-upload" />
-            <NavItem icon={FileText} label="Sales Reports" path="/sales" />
-            <NavItem
-              icon={AlertCircle}
-              label="Low Stock"
-              path="/low-stock"
-              badge={lowStockCount}
-            />
-            {userRole === "admin" && (
-              <NavItem icon={Users} label="User Management" path="/users" />
-            )}
+            {sidebarMenu.map((route) => (
+              <NavItem
+                key={route.path}
+                icon={getIcon(route.title)}
+                label={route.title}
+                path={route.path}
+                badge={route.path === "/low-stock" ? lowStockCount : undefined}
+              />
+            ))}
 
             <div className="pt-6 mt-6 border-t border-gray-800">
               <Button
