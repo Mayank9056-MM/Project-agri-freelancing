@@ -159,17 +159,21 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
-  const getProductFromBarcode = async (barcode) => {
-    try {
-      setLoading(true);
-      const res = await getProductFromBarcodeApi(barcode);
-      return res;
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const getProductFromBarcode = async (barcode) => {
+  setLoading(true);
+  try {
+    const res = await getProductFromBarcodeApi(barcode);
+    return { success: true, product: res.product };
+  } catch (error) {
+    return {
+      success: false,
+      message: error?.response?.data?.message || "Product not found",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const value = {
     getAllProducts,

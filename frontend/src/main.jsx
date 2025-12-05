@@ -11,18 +11,16 @@ import { ProductProvider } from "./context/ProductContext";
 import { SaleProvider } from "./context/SaleContext";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <BrowserRouter>
-      <ThemeProvider>
-        <ProductProvider>
-          <AuthProvider>
-            <SaleProvider>
-              <App />
-            </SaleProvider>
-            <CustomToaster />
-          </AuthProvider>
-        </ProductProvider>
-      </ThemeProvider>
-    </BrowserRouter>
-  </StrictMode>
+  <BrowserRouter>
+    <ThemeProvider>
+      <ProductProvider>
+        <AuthProvider>
+          <SaleProvider>
+            <App />
+          </SaleProvider>
+          <CustomToaster />
+        </AuthProvider>
+      </ProductProvider>
+    </ThemeProvider>
+  </BrowserRouter>
 );

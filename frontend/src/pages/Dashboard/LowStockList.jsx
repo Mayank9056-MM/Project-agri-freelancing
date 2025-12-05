@@ -233,8 +233,8 @@ const LowStock = () => {
 
   const filteredItems = lowStockItems.filter((item) => {
     const matchesSearch =
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.sku.toLowerCase().includes(searchTerm.toLowerCase());
+      item.name?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+      item.sku?.toLowerCase()?.includes(searchTerm.toLowerCase());
     const matchesFilter =
       filterStatus === "all" || item.status === filterStatus;
     return matchesSearch && matchesFilter;

@@ -10,7 +10,6 @@ import {
   Plus,
   Users,
   Bell,
-  Search,
   LogOut,
   BarChart3,
   AlertCircle,
@@ -19,7 +18,6 @@ import {
   Camera,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { AuthContext } from "@/context/AuthContext";
 import { ThemeContext } from "@/context/ThemeContext";
 import toast from "react-hot-toast";
@@ -34,6 +32,7 @@ const Layout = () => {
   const location = useLocation();
   const [lowStockCount, setLowStockCount] = useState(0);
   const { getLowStockProducts } = useContext(ProductContext);
+
   useEffect(() => {
     // getLowStockProducts()
     //   .then((data) => setLowStockCount(data?.count))
@@ -103,6 +102,7 @@ const Layout = () => {
       >
         <div className="px-4 lg:px-6">
           <div className="flex items-center justify-between h-16">
+            {/* Left Section */}
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
@@ -116,6 +116,7 @@ const Layout = () => {
                   <Menu className="h-5 w-5" />
                 )}
               </Button>
+
               <div className="flex items-center gap-3">
                 <div
                   className={`w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br shadow-lg cursor-pointer ${
@@ -149,31 +150,13 @@ const Layout = () => {
               </div>
             </div>
 
-            <div className="hidden md:flex flex-1 max-w-md mx-8">
-              <div className="relative w-full group">
-                <Search
-                  className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${
-                    isDark
-                      ? "text-gray-500 group-hover:text-gray-400"
-                      : "text-gray-400 group-hover:text-gray-600"
-                  }`}
-                />
-                <Input
-                  placeholder="Search products, invoices..."
-                  className={`pl-10 h-10 transition-all ${
-                    isDark
-                      ? "bg-gray-800/50 border-gray-700 focus:bg-gray-800 focus:border-violet-500"
-                      : "bg-gray-100 border-gray-200 focus:border-violet-400"
-                  }`}
-                />
-              </div>
-            </div>
-
+            {/* Right Section */}
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon" className="relative group">
                 <Bell className="h-5 w-5" />
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-gradient-to-r from-rose-500 to-red-600 rounded-full animate-pulse shadow-lg shadow-red-500/50"></span>
               </Button>
+
               <Button
                 variant="ghost"
                 size="icon"
@@ -186,6 +169,7 @@ const Layout = () => {
                   <Moon className="h-5 w-5" />
                 )}
               </Button>
+
               <div
                 className={`hidden sm:flex items-center gap-3 ml-2 pl-3 border-l ${
                   isDark ? "border-gray-800" : "border-gray-200"
@@ -199,7 +183,7 @@ const Layout = () => {
                   }`}
                 >
                   {user?.avatar ? (
-                    <img src={user.avatar} />
+                    <img src={user.avatar} alt="User" />
                   ) : (
                     <Users className="h-5 w-5" />
                   )}
@@ -363,7 +347,7 @@ const Layout = () => {
           </div>
         )}
 
-        {/* Main Content - React Router Outlet */}
+        {/* Main Content */}
         <main className="flex-1 p-4 lg:p-6 overflow-auto">
           <Outlet />
         </main>

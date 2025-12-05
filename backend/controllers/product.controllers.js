@@ -1,5 +1,6 @@
 import Product from "../models/Product.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { sendLowStockEmail } from "../utils/mailer.js";
 
 /**
  * Create a new product
@@ -50,6 +51,13 @@ export const createProduct = async (req, res) => {
 
     if (!product) {
       throw new Error("something went wrong while creating product");
+    }
+
+    // send email if stock is low
+    if (product.stock < product.low_stock_threshold) {
+      await sendLowStockEmail(product);
+      product.alertSent = true;
+      await product.save();
     }
 
     res.status(201).json({
@@ -137,6 +145,13 @@ export const updateProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    // send email
+    if (updateProduct.stock < updateProduct.low_stock_threshold) {
+      await sendLowStockEmail(updatedProduct);
+      updateProduct.alertSent = true;
+      await updateProduct.save();
+    }
+
     res.status(200).json({ product: updatedProduct });
   } catch (error) {
     console.log(error);
@@ -211,7 +226,7 @@ export const bulkUploadProducts = async (req, res) => {
 
     const existingCount = await Product.countDocuments();
 
-    console.log(existingCount)
+    console.log(existingCount);
 
     const validProducts = products.map((p, index) => ({
       sku: `SKU${String(existingCount + index + 1).padStart(3, "0")}`,
@@ -225,11 +240,20 @@ export const bulkUploadProducts = async (req, res) => {
       low_stock_threshold: Number(p.low_stock_threshold) || 0,
     }));
 
-    console.log(validProducts)
+    console.log(validProducts);
 
     const insertedProducts = await Product.insertMany(validProducts, {
       ordered: false,
     });
+
+    // send email
+    for (const product of insertedProducts) {
+      if (product.stock < product.low_stock_threshold) {
+        await sendLowStockEmail(product);
+        product.alertSent = true;
+        await product.save();
+      }
+    }
 
     console.log(insertedProducts);
 
@@ -247,47 +271,70 @@ export const bulkUploadProducts = async (req, res) => {
 };
 
 
-
 /**
- * Retrieves all products with low stock from the database.
- *
- * Low stock is defined as products with stock < low_stock_threshold
- *
- * Critical stock is defined as products with stock <= low_stock_threshold / 2
- *
- * @returns {Promise<object[]>} A promise that resolves with an array of product objects with low stock.
- * @throws {Error} - if something goes wrong while fetching products
+ * Retrieves all products with low stock (i.e. stock < low_stock_threshold)
+ * and sorts them by their stock in ascending order.
+ * 
+ * For each product, the following fields are returned:
+ *   - id
+ *   - sku
+ *   - name
+ *   - currentStock
+ *   - minStock (i.e. low_stock_threshold)
+ *   - reorderPoint (i.e. 0.8 * low_stock_threshold)
+ *   - price
+ *   - category
+ *   - supplier
+ *   - lastRestocked (i.e. updated_at)
+ *   - status (i.e. low or critical)
+ * 
+ * If a product's stock is less than or equal to half of its low stock threshold,
+ * it is marked as "critical". Otherwise, it is marked as "low".
+ * 
+ * If a product's alertSent field is false, an email is sent to the admin
+ * and the field is set to true.
+ * 
+ * @returns {Promise<Object>} A promise that resolves with a JSON object containing
+ * the fetched products and a success message.
+ * 
+ * @throws {Error} If something goes wrong while fetching products.
  */
 export const getLowStockProducts = async (req, res, next) => {
   try {
-    // ✅ Find products where stock < low_stock_threshold
     const products = await Product.find({
-      $expr: { $lt: ["$stock", "$low_stock_threshold"] },
+      $expr: { $lt: ["$stock", "$low_stock_threshold"] }
     }).sort({ stock: 1 });
 
-    // ✅ Map data to the format your frontend expects
-    const mapped = products.map((p) => {
-      let status = "low";
-      // Critical = less than half the threshold
-      if (p.stock <= p.low_stock_threshold / 2) status = "critical";
+    const mapped = await Promise.all(
+      products.map(async (p) => {
+        let status = "low";
+        if (p.stock <= p.low_stock_threshold / 2) status = "critical";
 
-      return {
-        id: p._id,
-        sku: p.sku,
-        name: p.name,
-        currentStock: p.stock,
-        minStock: p.low_stock_threshold, // renamed field for compatibility
-        reorderPoint: Math.round(p.low_stock_threshold * 0.8), // estimate
-        price: p.price,
-        category: p.category || "General",
-        supplier: p.supplier || "Unknown",
-        lastRestocked: p.updatedAt,
-        status,
-      };
-    });
+        // Send email only once
+        if (!p.alertSent) {
+          await sendLowStockEmail(p);
+          p.alertSent = true;
+          await p.save();
+        }
+
+        return {
+          id: p._id,
+          sku: p.sku,
+          name: p.name,
+          currentStock: p.stock,
+          minStock: p.low_stock_threshold,
+          reorderPoint: Math.round(p.low_stock_threshold * 0.8),
+          price: p.price,
+          category: p.category,
+          supplier: p.supplier || "Unknown",
+          lastRestocked: p.updatedAt,
+          status,
+        };
+      })
+    );
 
     res.status(200).json({
-      status: 200,
+      success: true,
       message: "Low stock products fetched successfully",
       products: mapped,
     });
@@ -295,6 +342,7 @@ export const getLowStockProducts = async (req, res, next) => {
     next(error);
   }
 };
+
 
 /**
  * Retrieves a product by its barcode.
@@ -307,19 +355,18 @@ export const getProductByBarcode = async (req, res) => {
   try {
     const { code } = req.params;
 
-    console.log(code)
-    if(!code){
+    console.log(code);
+    if (!code) {
       return res.status(400).json({
         success: false,
         message: "Barcode is required",
       });
     }
 
-
     // find by barcode
     const product = await Product.findOne({ barcode: code });
 
-    console.log(product)
+    console.log(product);
 
     if (!product) {
       return res.status(404).json({
@@ -340,5 +387,3 @@ export const getProductByBarcode = async (req, res) => {
     });
   }
 };
-
-
