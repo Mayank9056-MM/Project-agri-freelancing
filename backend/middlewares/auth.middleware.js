@@ -19,7 +19,10 @@ export const verifyAuth = async (req, _, next) => {
     const user = await User.findById(decodedToken?._id).select("-password");
 
     if (!user) {
-      throw new Error("Unauthorized");
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized - no user found",
+      });
     }
 
     req.user = user;
@@ -30,8 +33,9 @@ export const verifyAuth = async (req, _, next) => {
 };
 
 export const verifyAdmin = (req, _, next) => {
-  if (req?.user?.role !== "admin") {
-    throw new Error("Unauthorized as admin");
-  }
+  return res.status(403).json({
+    success: false,
+    message: "Forbidden - admin access required",
+  });
   next();
 };
