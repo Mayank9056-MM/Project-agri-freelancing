@@ -36,7 +36,7 @@ const ProductForm = () => {
 
   const isEditMode = Boolean(sku);
 
-  const onCancel = () => navigate("/products");
+  const onCancel = () => navigate(-1);
   const { createProduct, updateProduct, getProductBySku, product } =
     useContext(ProductContext);
 
