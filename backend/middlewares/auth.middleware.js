@@ -33,9 +33,9 @@ export const verifyAuth = async (req, _, next) => {
 };
 
 export const verifyAdmin = (req, _, next) => {
+  if (req.user.role === "admin") return next();
   return res.status(403).json({
     success: false,
     message: "Forbidden - admin access required",
   });
-  next();
 };
