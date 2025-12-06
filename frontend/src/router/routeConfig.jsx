@@ -8,6 +8,7 @@ import DeleteProduct from "@/pages/Products/DeleteProduct";
 import ProductDetail from "@/pages/Products/ProductDetail";
 import ProductForm from "@/pages/Products/ProductForm";
 import ProductsList from "@/pages/Products/ProductsList";
+import RestockPage from "@/pages/Products/RestorePage";
 import SalesReport from "@/pages/Sales/SalesReport";
 import SettingsPage from "@/pages/Settings/SettingsPage";
 import UserManagement from "@/pages/Settings/UserManagement";
@@ -57,9 +58,6 @@ export const protectedRoutes = [
     roles: ["admin"],
   },
   {
-    path: "/pro",
-  },
-  {
     path: "/pos",
     element: <POSPage />,
     title: "Point of Sale",
@@ -106,14 +104,13 @@ export const protectedRoutes = [
     element: <SettingsPage />,
     title: "Settings",
     roles: ["admin"],
-    // children: [
-    //   {
-    //     path: "users",
-    //     element: <UserManagement />,
-    //     roles: ["admin"],
-    //   },
-    // ],
   },
+  {
+    path: "/restock/:sku",
+    element: <RestockPage />,
+    title: "Restock",
+    roles: ["admin"]
+  }
 ];
 
 export const adminRoutes = [
@@ -160,10 +157,4 @@ export const adminRoutes = [
     title: "Users",
     roles: ["admin"],
   },
-  // {
-  //   path: "/settings",
-  //   element: <SettingsPage />,
-  //   title: "Settings",
-  //   roles: ["admin"],
-  // },
 ];

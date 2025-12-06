@@ -445,7 +445,7 @@ const POSPage = () => {
                 <div className="space-y-3">
                   {cart.map((item) => (
                     <div
-                      key={item.id}
+                      key={item._id}
                       className={`p-4 rounded-xl transition-all ${
                         isDark
                           ? "bg-gray-800/50 hover:bg-gray-800"
