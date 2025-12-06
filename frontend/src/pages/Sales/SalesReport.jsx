@@ -22,6 +22,10 @@ import {
 } from "@/components/ui/card";
 import { ThemeContext } from "@/context/ThemeContext";
 import { SaleContext } from "@/context/SaleContext";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const SalesReport = () => {
   const { theme } = useContext(ThemeContext);
@@ -35,13 +39,118 @@ const SalesReport = () => {
   const [salesData, setSalesData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showExport, setShowExport] = useState(false);
+
+  // Export to Excel (.xlsx)
+  const exportToExcel = () => {
+    if (!salesData.length) {
+      alert("No sales data to export!");
+      return;
+    }
+
+    const exportData = salesData.map((sale) => ({
+      SaleID: sale.saleId,
+      Date: new Date(sale.createdAt).toLocaleString(),
+      PaymentMethod: sale.paymentMethod,
+      PaymentStatus: sale.paymentStatus,
+      Total: sale.total,
+      Items: sale.items.map((i) => `${i.name} (x${i.qty})`).join(", "),
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sales Report");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    saveAs(
+      new Blob([excelBuffer], {
+        type: "application/octet-stream",
+      }),
+      `sales_report_${Date.now()}.xlsx`
+    );
+  };
+
+  // Export to CSV
+  const exportToCSV = () => {
+    if (!salesData.length) {
+      alert("No sales data to export!");
+      return;
+    }
+
+    const csv = [
+      [
+        "SaleID",
+        "Date",
+        "PaymentMethod",
+        "PaymentStatus",
+        "Total",
+        "Items",
+      ].join(","),
+      ...salesData.map((sale) =>
+        [
+          sale.saleId,
+          new Date(sale.createdAt).toLocaleString(),
+          sale.paymentMethod,
+          sale.paymentStatus,
+          sale.total,
+          sale.items.map((i) => `${i.name} (x${i.qty})`).join(" | "),
+        ].join(",")
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, `sales_report_${Date.now()}.csv`);
+  };
+
+  // Export to PDF
+  const exportToPDF = () => {
+    if (!salesData.length) {
+      alert("No sales data to export!");
+      return;
+    }
+
+    const doc = new jsPDF(); // <-- jsPDF instance
+
+    doc.setFontSize(18);
+    doc.text("Sales Report", 14, 20);
+
+    const tableData = salesData.map((sale) => [
+      sale.saleId,
+      new Date(sale.createdAt).toLocaleString(),
+      sale.paymentMethod,
+      sale.paymentStatus,
+      "₹" + sale.total.toLocaleString(),
+    ]);
+
+    autoTable(doc, {
+      head: [["Sale ID", "Date", "Method", "Status", "Total"]],
+      body: tableData,
+      startY: 30,
+      theme: "grid",
+      headStyles: {
+        fillColor: [100, 0, 255],
+      },
+    });
+
+    doc.save(`sales_report_${Date.now()}.pdf`);
+  };
 
   // 🧠 Fetch sales from backend
   useEffect(() => {
+    /**
+     * Fetches all sales data from the backend API.
+     *
+     * @returns {Promise<void>} A promise that resolves when the sales data has been fetched.
+     * @throws {Error} - if something goes wrong while fetching the sales data
+     */
     const fetchSales = async () => {
       try {
         const sales = await getAllSales();
-        console.log(sales)
+        console.log(sales);
         setSalesData(sales || []);
       } catch (err) {
         console.error(err);
@@ -184,16 +293,48 @@ const SalesReport = () => {
             <Filter className="h-4 w-4 mr-2" />
             Filters
           </Button>
-          <Button
-            className={`bg-gradient-to-r ${
-              isDark
-                ? "from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
-                : "from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
-            } shadow-lg`}
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
+          <div className="relative">
+            <Button
+              onClick={() => setShowExport((prev) => !prev)}
+              className={`bg-gradient-to-r ${
+                isDark
+                  ? "from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
+                  : "from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
+              } shadow-lg`}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+
+            {showExport && (
+              <div
+                className={`absolute right-0 mt-2 w-48 rounded-xl shadow-xl z-50 border ${
+                  isDark
+                    ? "bg-gray-900 border-gray-700"
+                    : "bg-white border-gray-200"
+                }`}
+              >
+                <button
+                  onClick={exportToExcel}
+                  className="px-4 py-2 w-full text-left hover:bg-gray-100 dark:hover:bg-gray-800"
+                >
+                  Excel (.xlsx)
+                </button>
+                <button
+                  onClick={exportToCSV}
+                  className="px-4 py-2 w-full text-left hover:bg-gray-100 dark:hover:bg-gray-800"
+                >
+                  CSV (.csv)
+                </button>
+                <button
+                  onClick={exportToPDF}
+                  className="px-4 py-2 w-full text-left hover:bg-gray-100 dark:hover:bg-gray-800"
+                >
+                  PDF (.pdf)
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
