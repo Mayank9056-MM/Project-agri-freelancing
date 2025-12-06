@@ -22,7 +22,7 @@ import { AuthContext } from "@/context/AuthContext";
 import { ThemeContext } from "@/context/ThemeContext";
 import toast from "react-hot-toast";
 import { ProductContext } from "@/context/ProductContext";
-import { protectedRoutes } from "@/router/routeConfig";
+import { adminRoutes, protectedRoutes } from "@/router/routeConfig";
 
 const Layout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -85,7 +85,7 @@ const Layout = () => {
     );
   };
 
-  const sidebarMenu = protectedRoutes.filter((route) =>
+  const sidebarMenu = adminRoutes.filter((route) =>
     route.roles?.includes(userRole)
   );
 
