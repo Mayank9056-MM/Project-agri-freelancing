@@ -57,7 +57,7 @@ export const protectedRoutes = [
     roles: ["admin"],
   },
   {
-   path: "/pro"
+    path: "/pro",
   },
   {
     path: "/pos",
@@ -114,4 +114,56 @@ export const protectedRoutes = [
     //   },
     // ],
   },
+];
+
+export const adminRoutes = [
+  {
+    path: "/",
+    element: <Dashboard />,
+    title: "Dashboard",
+    roles: ["admin", "cashier"], // both can access
+  },
+  {
+    path: "/pos",
+    element: <POSPage />,
+    title: "POS / Billing",
+    roles: ["cashier", "admin"],
+  },
+  {
+    path: "/products",
+    element: <ProductsList />,
+    title: "Products",
+    roles: ["admin"],
+  },
+  {
+    path: "/bulk-upload",
+    element: <BulkUpload />,
+    title: "Bulk Upload",
+    roles: ["admin"],
+  },
+  {
+    path: "/sales",
+    element: <SalesReport />,
+    title: "Sales Report",
+    roles: ["admin"],
+  },
+  {
+    path: "/low-stock",
+    element: <LowStock />,
+    title: "Low Stock",
+    roles: ["admin"],
+  },
+
+  {
+    path: "/users",
+    element: <UserManagement />,
+    title: "Users",
+    roles: ["admin"],
+  },
+  // {
+  //   path: "/settings",
+  //   element: <SettingsPage />,
+  //   title: "Settings",
+  //   roles: ["admin"],
+  // },
 ];
