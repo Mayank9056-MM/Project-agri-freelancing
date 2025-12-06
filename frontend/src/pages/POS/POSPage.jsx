@@ -95,6 +95,9 @@ const POSPage = () => {
     getAllProducts();
   }, []);
 
+  console.log(getAllProducts, "getAllProducts");
+  console.log(products, "products");
+
   const handleCheckout = async (paymentMethod) => {
     if (cart.length === 0) {
       toast.error("Cart is empty!");
@@ -111,7 +114,6 @@ const POSPage = () => {
       }));
 
       if (paymentMethod === "card" || paymentMethod === "upi") {
-       
         const session = await initiateStripeCheckout(items, paymentMethod);
 
         if (!session?.url) {
@@ -152,6 +154,8 @@ const POSPage = () => {
       generateInvoice(saleData);
 
       clearCart();
+      await getAllProducts();
+
     } catch (error) {
       console.error(error);
       toast.error(error.response?.data?.message || "Sale failed");
@@ -161,22 +165,21 @@ const POSPage = () => {
   const quickDiscounts = [5, 10, 15, 20];
 
   const addToCart = (product) => {
+    if (product.stock <= 0) {
+      toast.error(`${product.name} is out of stock`);
+      return;
+    }
+
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.sku === product.sku);
 
       if (existingItem) {
         if (existingItem.quantity >= product.stock) {
-          setTimeout(
-            () => toast.error(`Only ${product.stock} items in stock`),
-            0
-          );
+          toast.error(`Only ${product.stock} items in stock`);
           return prevCart;
         }
 
-        setTimeout(
-          () => toast.success(`Quantity updated for ${product.name}`),
-          0
-        );
+        toast.success(`Quantity updated for ${product.name}`);
         return prevCart.map((item) =>
           item.sku === product.sku
             ? { ...item, quantity: item.quantity + 1 }
@@ -184,8 +187,7 @@ const POSPage = () => {
         );
       }
 
-      setTimeout(() => toast.success(`${product.name} added to cart`), 0);
-
+      toast.success(`${product.name} added to cart`);
       return [
         ...prevCart,
         {
@@ -205,6 +207,56 @@ const POSPage = () => {
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.sku.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  filteredProducts?.slice(0, 8).map((product) => {
+    // find existing item in cart
+    const existing = cart.find((c) => c.sku === product.sku);
+    const remaining = existing
+      ? product.stock - existing.quantity
+      : product.stock;
+
+    return (
+      <button
+        key={product._id}
+        onClick={() => addToCart(product)}
+        disabled={product.stock === 0}
+        className={`p-3 rounded-xl text-left transition-all 
+        ${
+          isDark
+            ? "bg-gray-800/50 border-gray-700/50"
+            : "bg-gray-50 border-gray-200"
+        }
+        ${
+          product.stock === 0
+            ? "opacity-50 cursor-not-allowed"
+            : "hover:scale-[1.02]"
+        }
+      `}
+      >
+        <p
+          className={`font-semibold text-sm ${
+            isDark ? "text-white" : "text-gray-900"
+          }`}
+        >
+          {product.name}
+        </p>
+
+        <div className="flex items-center justify-between mt-1">
+          <p
+            className={`text-sm font-bold ${
+              isDark ? "text-emerald-400" : "text-emerald-600"
+            }`}
+          >
+            ₹{product.price}
+          </p>
+
+          <span className="text-xs text-gray-500">
+            {remaining <= 0 ? "Out of Stock" : `Remaining: ${remaining}`}
+          </span>
+        </div>
+      </button>
+    );
+  });
 
   return (
     <div className="space-y-6">
@@ -337,7 +389,7 @@ const POSPage = () => {
                             isDark ? "text-gray-500" : "text-gray-500"
                           }`}
                         >
-                          Stock: {product.stock}
+                          Remaining: {product.stock}
                         </span>
                       </div>
                     </button>
@@ -393,7 +445,7 @@ const POSPage = () => {
                 <div className="space-y-3">
                   {cart.map((item) => (
                     <div
-                      key={item.id}
+                      key={item._id}
                       className={`p-4 rounded-xl transition-all ${
                         isDark
                           ? "bg-gray-800/50 hover:bg-gray-800"

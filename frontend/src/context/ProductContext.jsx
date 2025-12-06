@@ -159,21 +159,38 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
- const getProductFromBarcode = async (barcode) => {
-  setLoading(true);
-  try {
-    const res = await getProductFromBarcodeApi(barcode);
-    return { success: true, product: res.product };
-  } catch (error) {
-    return {
-      success: false,
-      message: error?.response?.data?.message || "Product not found",
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+  const getProductFromBarcode = async (barcode) => {
+    setLoading(true);
+    try {
+      const res = await getProductFromBarcodeApi(barcode);
+      return { success: true, product: res.product };
+    } catch (error) {
+      return {
+        success: false,
+        message: error?.response?.data?.message || "Product not found",
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const restockProduct = async (sku, quantity) => {
+    setLoading(true);
+    try {
+      const data = new FormData();
+      data.append("stock", quantity);
+
+      const res = await updateProductApi(sku, data);
+      toast.success("Product restocked successfully!");
+      await getAllProducts();
+      return res;
+    } catch (err) {
+      console.log(err);
+      toast.error(err?.response?.data?.message || "Failed to restock product");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const value = {
     getAllProducts,
@@ -187,6 +204,7 @@ export const ProductProvider = ({ children }) => {
     bulkUpload,
     getLowStockProducts,
     getProductFromBarcode,
+    restockProduct,
   };
 
   return (

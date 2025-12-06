@@ -25,6 +25,7 @@ import { AuthContext } from "@/context/AuthContext";
 import { ProductContext } from "@/context/ProductContext";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { useNavigate } from "react-router-dom";
 
 const LowStock = () => {
   const { theme } = useContext(ThemeContext);
@@ -37,11 +38,12 @@ const LowStock = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const { getLowStockProducts } = useContext(ProductContext);
+  const navigate = useNavigate();
 
   const fetchLowStock = async () => {
     try {
       const res = await getLowStockProducts();
-      console.log(res)
+      console.log(res);
       setLowStockItems(res.products || []);
     } catch (err) {
       console.error(err);
@@ -55,9 +57,6 @@ const LowStock = () => {
     fetchLowStock();
   }, []);
 
-
-
- 
   const stats = [
     {
       title: "Critical Items",
@@ -138,39 +137,38 @@ const LowStock = () => {
   });
 
   const handleExport = () => {
-  if (!lowStockItems.length) {
-    alert("No data to export!");
-    return;
-  }
+    if (!lowStockItems.length) {
+      alert("No data to export!");
+      return;
+    }
 
-  const exportData = lowStockItems.map(item => ({
-    SKU: item.sku,
-    Name: item.name,
-    "Current Stock": item.currentStock,
-    "Minimum Stock": item.minStock,
-    "Reorder Point": item.reorderPoint,
-    Status: item.status,
-    Category: item.category,
-    Supplier: item.supplier,
-    "Last Restocked": new Date(item.lastRestocked).toLocaleDateString(),
-    Price: item.price,
-  }));
+    const exportData = lowStockItems.map((item) => ({
+      SKU: item.sku,
+      Name: item.name,
+      "Current Stock": item.currentStock,
+      "Minimum Stock": item.minStock,
+      "Reorder Point": item.reorderPoint,
+      Status: item.status,
+      Category: item.category,
+      Supplier: item.supplier,
+      "Last Restocked": new Date(item.lastRestocked).toLocaleDateString(),
+      Price: item.price,
+    }));
 
-  const worksheet = XLSX.utils.json_to_sheet(exportData);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Low Stock");
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Low Stock");
 
-  const excelBuffer = XLSX.write(workbook, {
-    bookType: "xlsx",
-    type: "array",
-  });
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
 
-  saveAs(
-    new Blob([excelBuffer], { type: "application/octet-stream" }),
-    "low_stock_report.xlsx"
-  );
-};
-
+    saveAs(
+      new Blob([excelBuffer], { type: "application/octet-stream" }),
+      "low_stock_report.xlsx"
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -198,7 +196,7 @@ const LowStock = () => {
         <div className="flex items-center gap-3">
           <Button
             variant="outline"
-              onClick={() => handleExport()}
+            onClick={() => handleExport()}
             className={`${
               isDark
                 ? "bg-gray-800 border-gray-700 hover:bg-gray-700"
@@ -531,14 +529,15 @@ const LowStock = () => {
 
                     {/* Action Button */}
                     <Button
+                      onClick={() => navigate(`/restock/${item.sku}`)}
                       className={`bg-gradient-to-r ${
                         item.status === "critical"
                           ? "from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700"
                           : "from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
-                      } shadow-lg whitespace-nowrap`}
+                      } shadow-lg`}
                     >
                       <ShoppingCart className="h-4 w-4 mr-2" />
-                      Reorder Now
+                      Restock Now
                     </Button>
                   </div>
                 </div>
