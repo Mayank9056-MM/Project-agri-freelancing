@@ -39,7 +39,7 @@ const uploadOnCloudinary = async (localFilePath) => {
 };
 
 const createAdmin = async () => {
-  await mongoose.connect(`${process.env.MONGODB_URI}/${DB_NAME}`);
+  await mongoose.connect(`${process.env.MONGO_URI}/${DB_NAME}`);
 
   let admin = await User.findOne({ role: "admin" });
   if (!admin) {
