@@ -73,6 +73,9 @@ const Dashboard = () => {
         setLowStock(lowRes.products || []);
       } catch (err) {
         console.error("Dashboard data error:", err);
+        setProducts([]);
+        setSales([]);
+        setLowStock([]);
       } finally {
         setLoading(false);
       }
