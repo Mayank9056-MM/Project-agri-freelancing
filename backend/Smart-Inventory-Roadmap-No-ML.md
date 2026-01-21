@@ -1,79 +1,78 @@
-# Smart Inventory & Billing System (No ML) — Roadmap (Full-JS)
+# Smart Inventory & Billing System (Full‑JS)
 
-**Quick summary:**  
-A lightweight, reliable web app for small shops/agro stores to manage products, stock, billing, barcode scanning, and payments (UPI QR + Offline Cash). No machine learning — everything works with manual product entry or CSV upload.
-
----
-
-## 1 — What you will build (simple)
-- A web dashboard for **admins** to add/edit products and upload CSV files.  
-- A **billing POS** page for cashiers to scan barcodes, add items to cart, and checkout.  
-- Generate product **barcodes** and **QR** codes for payments.  
-- Support **online payment** via UPI QR (display QR to customer) and **offline cash** option.  
-- Basic **sales reports** and **stock alerts** (low stock).
+**Lightweight web app for small shops and agro stores** — manage products, inventory, billing/POS, barcode scanning, and payments (UPI QR + Cash). This project is intentionally simple and reliable: no machine learning, all product data is entered manually or imported via CSV.
 
 ---
 
-## 2 — Core features (must-haves)
-1. **Product Management**
-   - Add / edit / delete products manually.
-   - Bulk CSV upload (fields listed below).
-   - Auto-generate barcode image and downloadable label.
+## Quick summary
 
-2. **Inventory Tracking**
-   - Track current stock per product.
-   - Update stock automatically when a sale is recorded.
-   - Low-stock alert threshold.
-
-3. **POS / Billing**
-   - Barcode scanning via webcam or external scanner.
-   - Add items to cart, change quantity, apply discount/tax.
-   - Two payment flows:
-     - **UPI QR Payment**: generate and show QR (customer scans & pays), then mark as paid.
-     - **Cash**: record cash received and complete sale.
-   - Generate printable receipt (PDF/HTML).
-
-4. **Sales Dashboard**
-   - Today’s sales, top-selling products, stock summary.
-   - Simple date-range filtering.
-
-5. **User Roles**
-   - Admin (manage products, view reports).
-   - Cashier (create bills, scan products).
-
-6. **Optional**: WordPress sync (push product catalog).
+* **Purpose:** Provide a dependable, easy-to-use POS + inventory web app for small merchants.
+* **Audience:** Small shop owners, agro stores, grocers, and cashiers.
+* **MVP scope:** Product management, stock tracking, POS billing with barcode scanning, UPI QR & cash payments, printable receipts, basic sales dashboard.
 
 ---
 
-## 3 — Tech stack (Full JavaScript)
-- Frontend: **React** (Vite or CRA) + TypeScript (recommended)  
-- Styling: TailwindCSS or simple CSS  
-- Backend: **Node.js** + **Express** (TypeScript recommended)  
-- Database: **MongoDB Atlas**  
-- Auth: JWT (jsonwebtoken)  
-- Barcode generation: `jsbarcode` or server-side `bwip-js`  
-- Barcode scanning: `html5-qrcode` or `quaggaJS` (webcam)  
-- QR generation (UPI): `qrcode` or `upi-payment-qrcode` libs (or manual UPI URI -> QR)  
-- Deployment: Vercel (frontend) + Render / Heroku / Cloud Run (backend)  
-- Docker for containerization (optional)
+## Key features
+
+1. **Product management** – add, edit, delete products; bulk CSV import; auto-generate barcode images and printable labels.
+2. **Inventory tracking** – live stock counts per SKU; automatic decrement on sale; low-stock alerts.
+3. **POS / Billing** – webcam or scanner barcode input, cart management, discounts/taxes, cash & UPI QR payment flows, printable receipts.
+4. **Sales dashboard** – today’s sales, top-sellers, stock summary, simple date-range filters.
+5. **User roles** – `admin` (full access) and `cashier` (billing only).
+6. **Extensible** – optional WordPress sync, Docker support, deployable to common cloud providers.
 
 ---
 
-## 4 — CSV format (for bulk product upload)
-Provide CSV with header row; required fields in **bold**:
+## Tech stack
+
+* **Frontend:** React + TypeScript (Vite recommended)
+* **Styling:** Tailwind CSS (or plain CSS)
+* **Backend:** Node.js + Express (+ TypeScript suggested)
+* **Database:** MongoDB (Atlas recommended)
+* **Auth:** JWT
+* **Barcode generation:** `jsbarcode` (client) or `bwip-js` (server)
+* **Barcode scanning:** `html5-qrcode` or `quaggaJS` (webcam)
+* **QR generation:** `qrcode` (UPI URI -> QR)
+* **Deployment:** Vercel for frontend; Render/Cloud Run/Heroku for backend
+* **Optional:** Docker / docker-compose
+
+---
+
+## Repository layout (short)
+
+```
+smart-inventory-billing/
+├── backend/
+├── frontend/
+├── docs/
+├── scripts/
+├── .env.example
+├── docker-compose.yml
+└── README.md
+```
+
+---
+
+## CSV format for product import
+
+CSV must have a header row. Required fields are bold.
+
 ```
 sku,name,category,price,**stock**,unit,barcode (optional),low_stock_threshold (optional),description
 ```
-Example:
+
+Example row:
+
 ```
-SKU001,Tomato,Vegetable,40,100,kg,,
+SKU001,Tomato,Vegetable,40,100,kg,,10,Fresh red tomatoes
 ```
 
 ---
 
-## 5 — Database schema (simplified)
+## Database schemas (simplified)
 
 **Product**
+
 ```json
 {
   "sku": "SKU001",
@@ -83,328 +82,244 @@ SKU001,Tomato,Vegetable,40,100,kg,,
   "stock": 100,
   "unit": "kg",
   "barcode": "123456789012",
-  "low_stock_threshold": 10,
-  "createdAt": "...",
-  "updatedAt": "..."
+  "low_stock_threshold": 10
 }
 ```
 
 **User**
+
 ```json
 {
   "email": "cashier@example.com",
   "passwordHash": "...",
-  "role": "cashier" // or "admin"
+  "role": "cashier"
 }
 ```
 
 **Sale**
+
 ```json
 {
   "saleId": "S20251029-001",
   "items": [{ "sku": "SKU001", "qty": 2, "price": 40 }],
   "total": 80,
-  "paymentMethod": "cash" | "upi",
-  "paymentStatus": "paid" | "pending",
+  "paymentMethod": "cash",
+  "paymentStatus": "paid",
   "createdBy": "userId",
-  "createdAt": "..."
+  "createdAt": "2025-10-29T10:00:00Z"
 }
 ```
 
 ---
 
-## 6 — API endpoints (example)
-- `POST /api/auth/login` — returns JWT  
-- `GET /api/products` — list products  
-- `POST /api/products` — add product  
-- `POST /api/products/upload` — CSV upload  
-- `GET /api/products/:sku/barcode` — returns barcode image (SVG/PNG)  
-- `POST /api/scan` — decode/upload scanned barcode (optional server-side)  
-- `POST /api/sales` — create sale record (body includes items & payment info)  
-- `GET /api/sales?from=&to=` — sales report  
-- `GET /api/dashboard` — summary KPIs
+## API endpoints (example)
+
+* `POST /api/auth/login` — returns JWT
+* `POST /api/auth/refresh` — exchange refresh token for access token
+* `GET /api/products` — list products (supports search & pagination)
+* `GET /api/products/:sku` — product detail
+* `POST /api/products` — add product
+* `PUT /api/products/:sku` — update product
+* `POST /api/products/upload` — CSV bulk upload
+* `GET /api/products/:sku/barcode` — barcode image (SVG/PNG)
+* `POST /api/sales` — create sale record
+* `GET /api/sales?from=&to=` — sales report
+* `GET /api/dashboard` — KPI summary
+
+> Note: Adapt routes to your favorite REST structure or switch to GraphQL later.
 
 ---
 
-## 7 — UI pages / Components
-- Login page  
-- Dashboard (KPIs, top products, low stock list)  
-- Products list (search, add, edit, CSV upload)  
-- Product detail (barcode, history)  
-- POS / Billing page (scanner, cart, payment options)  
-- Receipts (printable)  
-- Admin settings (users, thresholds)
+## Getting started — prerequisites
+
+Make sure you have the following installed on your development machine:
+
+* Node.js (v16+ recommended)
+* npm or yarn
+* MongoDB (local) or a MongoDB Atlas cluster
+* Git
+* (Optional) Docker & docker-compose for containerized local setup
 
 ---
 
-## 8 — Payment flow (UPI QR + Cash)
+## Environment variables
 
-### UPI QR flow (simple)
-1. Cashier finalizes bill in POS.  
-2. System generates UPI payment URI:
-   ```
-   upi://pay?pa=merchant@upi&pn=StoreName&am=80&cu=INR
-   ```
-3. Convert URI to QR image using `qrcode` npm package and show to customer.  
-4. Customer scans and pays via UPI app.  
-5. Cashier verifies payment manually (or if integrated with payment gateway, verifies automatically) and marks sale as **paid**.  
-> Note: For full automatic verification you'd need a payment gateway (Razorpay/PhonePe) or UPI callback which requires merchant setup. For MVP, manual verify + mark paid is fine.
+Create `.env` files for frontend and backend from the provided `.env.example`.
 
-### Cash flow
-- Cashier selects "Cash" as payment method, enters cash received, system calculates change, marks sale as paid.
+`backend/.env` (example):
+
+```
+PORT=4000
+MONGODB_URI=mongodb://localhost:27017/smart-inventory
+JWT_SECRET=your_jwt_secret_here
+ACCESS_TOKEN_TTL=15m
+REFRESH_TOKEN_TTL=7d
+UPI_MERCHANT=merchant@upi
+```
+
+`frontend/.env` (example):
+
+```
+VITE_API_BASE_URL=http://localhost:4000/api
+```
+
+Security note: never commit `.env` to Git.
 
 ---
 
-## 9 — Security basics
-- Use HTTPS in production.  
-- Store JWT secret and DB credentials in environment variables or secret manager.  
-- Hash passwords (bcrypt).  
-- Input validation (use `zod` or `joi`).  
-- Limit user roles and actions (RBAC).
+## Run locally — quick start (no Docker)
 
----
-
-## 10 — Fast development plan (4 weeks)
-
-**Week 1 — Setup & Products**
-- Project scaffolding (frontend & backend).  
-- Auth (login/signup).  
-- Product CRUD + CSV upload.  
-- Barcode generation API.
-
-**Week 2 — POS & Billing**
-- POS UI (scanner integration).  
-- Cart management, apply tax/discount.  
-- Sale creation endpoint (cash & UPI placeholder).
-
-**Week 3 — Payments & Receipts**
-- UPI QR generation UI.  
-- Cash payment flow & change calculation.  
-- Receipt generation (printable).  
-- Low stock alerts & dashboard basics.
-
-**Week 4 — Testing & Deployment**
-- End-to-end testing, bug fixes.  
-- Dockerize + deploy (Vercel + Render/Cloud Run).  
-- Create simple user manual.
-
-## 12 — Deliverables you should hand to client
-- Source code (GitHub link)  
-- Deployed app URL (staging/production)  
-- Credentials for admin user  
-- README with setup & run instructions  
-- Short user manual (PDF) showing how to scan, bill and mark payments  
-- Postman collection or OpenAPI spec
-
----
-
-## 13 — Next immediate steps (what I can do now)
-1. Generate the **project skeleton** (backend + frontend) with routes and basic UI.  
-2. Provide a **CSV ingestion script** and sample CSV file.  
-3. Create a **small React POS page** with barcode scanning demo.  
-4. Produce a **one-page PDF** version of this roadmap to show to client.
-
-Tell me which of the above you want me to generate immediately and I’ll create it right away.
-
----
-# Project Structure
-
-```
-smart-inventory-billing/
-├── backend/               # Node.js + Express server
-├── frontend/              # React web app (Vite/CRA)
-├── docs/                  # API docs, manuals
-├── scripts/               # CSV import, utilities
-├── .env.example           # Example environment file
-├── docker-compose.yml     # Optional: for container setup
-└── README.md
-```
-
-## Backend
-
-```
-  backend/
-├── src/
-│   ├── config/
-│   │   ├── db.js                 # MongoDB connection
-│   │   └── env.js                # Environment variables loader
-│   │
-│   ├── models/                   # Mongoose models
-│   │   ├── Product.js
-│   │   ├── User.js
-│   │   └── Sale.js
-│   │
-│   ├── controllers/              # Route handlers (logic)
-│   │   ├── productController.js
-│   │   ├── saleController.js
-│   │   ├── authController.js
-│   │   └── barcodeController.js
-│   │
-│   ├── routes/                   # Express routes
-│   │   ├── productRoutes.js
-│   │   ├── saleRoutes.js
-│   │   ├── authRoutes.js
-│   │   └── barcodeRoutes.js
-│   │
-│   ├── services/                 # Helper services (barcode, QR, CSV)
-│   │   ├── barcodeService.js
-│   │   ├── qrService.js
-│   │   ├── csvService.js
-│   │   └── reportService.js
-│   │
-│   ├── middleware/               # Auth & validation
-│   │   ├── authMiddleware.js
-│   │   └── errorHandler.js
-│   │
-│   ├── utils/                    # Small utilities
-│   │   ├── generateId.js
-│   │   └── logger.js
-│   │
-│   ├── app.js                    # Main Express app setup
-│   └── server.js                 # Entry point (starts server)
-│
-├── package.json
-└── .env
-```
-
-## Frontend
-
-```
- frontend/
-├── public/
-│   ├── logo.svg
-│   ├── favicon.ico
-│   └── manifest.json
-│
-├── src/
-│   ├── assets/                    # Static files (images, icons, CSV samples)
-│   │   ├── logo.png
-│   │   ├── barcode-demo.svg
-│   │   └── sample-products.csv
-│   │
-│   ├── components/                # Reusable UI components
-│   │   ├── layout/
-│   │   │   ├── Navbar.jsx
-│   │   │   ├── Sidebar.jsx
-│   │   │   ├── Layout.jsx         # Wraps sidebar + navbar + children
-│   │   │   └── ProtectedRoute.jsx # Auth check wrapper
-│   │   │
-│   │   ├── ui/
-│   │   │   ├── Button.jsx
-│   │   │   ├── Card.jsx
-│   │   │   ├── Input.jsx
-│   │   │   ├── Modal.jsx
-│   │   │   └── Table.jsx
-│   │   │
-│   │   ├── POS/
-│   │   │   ├── BarcodeScanner.jsx # Uses html5-qrcode or quagga
-│   │   │   ├── CartItem.jsx
-│   │   │   └── PaymentQRModal.jsx
-│   │   │
-│   │   └── Reports/
-│   │       ├── SalesChart.jsx
-│   │       └── TopProductsTable.jsx
-│   │
-│   ├── pages/
-│   │   ├── Auth/
-│   │   │   ├── Login.jsx
-│   │   │   └── Signup.jsx
-│   │   │
-│   │   ├── Dashboard/
-│   │   │   ├── Dashboard.jsx      # Main admin home (KPIs, charts)
-│   │   │   └── LowStockList.jsx
-│   │   │
-│   │   ├── Products/
-│   │   │   ├── ProductsList.jsx
-│   │   │   ├── ProductForm.jsx
-│   │   │   └── ProductDetail.jsx
-│   │   │
-│   │   ├── POS/
-│   │   │   ├── POSPage.jsx
-│   │   │   └── ReceiptPage.jsx
-│   │   │
-│   │   ├── Sales/
-│   │   │   ├── SalesReport.jsx
-│   │   │   └── SaleDetail.jsx
-│   │   │
-│   │   └── Settings/
-│   │       ├── SettingsPage.jsx
-│   │       └── UserManagement.jsx
-│   │
-│   ├── context/
-│   │   ├── AuthContext.jsx
-│   │   ├── CartContext.jsx
-│   │   └── ProductContext.jsx
-│   │
-│   ├── services/
-│   │   ├── api.js                 # axios instance
-│   │   ├── authService.js
-│   │   ├── productService.js
-│   │   ├── saleService.js
-│   │   ├── reportService.js
-│   │   └── uploadService.js       # CSV uploads
-│   │
-│   ├── hooks/
-│   │   ├── useAuth.js
-│   │   ├── useFetch.js
-│   │   └── useCart.js
-│   │
-│   ├── router/
-│   │   ├── AppRouter.jsx          # All routes with roles (admin/cashier)
-│   │   └── routesConfig.js
-│   │
-│   ├── styles/
-│   │   ├── globals.css
-│   │   └── tailwind.css
-│   │
-│   ├── App.jsx
-│   ├── main.jsx
-│   └── vite.config.js
-│
-├── .env
-├── package.json
-└── tailwind.config.js
-
-```
-
-## How to start server 
-
-If MongoDB is already running (as standalone):
-```bash
-sudo systemctl stop mongod
-```
+### 1. Clone repo
 
 ```bash
-pkill mongod
+git clone https://github.com/<your-org>/smart-inventory-billing.git
+cd smart-inventory-billing
 ```
 
-If MoRemove the old socket file (if exist):
+### 2. Setup backend
+
 ```bash
-sudo rm -f /tmp/mongodb-27017.sock
+cd backend
+cp .env.example .env
+# edit .env to set your MongoDB URI and JWT secret
+npm install
+npm run dev   # or `node dist/server.js` after building
 ```
 
-Ensure MongoDB data folder permissions are correct
+This starts the Express API on `http://localhost:4000` by default.
 
-MongoDB stores its data in /data/db by default.
-Make sure this folder exists and is writable by your user.
+### 3. Setup frontend
+
+Open another terminal
+
 ```bash
-sudo mkdir -p /data/db
-sudo chown -R $(whoami) /dta/dba
+cd frontend
+cp .env.example .env
+# edit .env and set VITE_API_BASE_URL if needed
+npm install
+npm run dev
 ```
 
-Start MongoDB again as replica set:
-```
-mongod --replSet rs0 --bind_ip localhost
-```
+Vite will start the frontend on `http://localhost:5173` (or another available port). The frontend communicates with the backend via the `VITE_API_BASE_URL`.
 
-Initialize replica set (in a new terminal):
-```
-mongosh
+---
 
-rs.initiate({
-  _id: "rs0",
-  members: [{ _id: 0, host: "localhost:27017" }]
-});
+## Run locally — with Docker (optional)
 
+A `docker-compose.yml` can orchestrate MongoDB, backend and frontend. Example workflow:
+
+```bash
+# from repo root
+docker compose up --build
 ```
 
+This builds images for backend and frontend and starts a MongoDB container. Check `docker-compose.yml` for ports and env mapping.
+
+---
+
+## Seed admin user (basic)
+
+A small script in `backend/scripts/seedAdmin.js` should create an admin user if none exists. Run:
+
+```bash
+node scripts/seedAdmin.js
+```
+
+Or use a POST request:
+
+```bash
+curl -X POST http://localhost:4000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@example.com","password":"password123","role":"admin"}'
+```
+
+---
+
+## POS / Billing — how to use
+
+1. Login as a cashier and open the **POS** page.
+2. Use a webcam or USB barcode scanner to add items to the cart.
+
+   * Webcam scanning uses `html5-qrcode` and fills the SKU/Barcode field.
+   * External scanner emulates keyboard input (enter after barcode).
+3. Adjust quantity, apply discount or tax if needed.
+4. Choose payment method:
+
+   * **Cash:** enter amount received, system calculates change and completes sale.
+   * **UPI QR:** system generates a UPI `upi://pay?...` URI → converted to QR using `qrcode` library. Customer scans and pays.
+
+     * MVP: cashier verifies payment manually and marks sale `paid`.
+     * For automatic verification, integrate a payment gateway with callbacks (Razorpay, PhonePe Business APIs, etc.).
+5. Print receipt (use browser print or generate PDF on server).
+
+---
+
+## CSV import — tips
+
+* Keep `sku` unique. The import script will skip or update existing SKUs based on your chosen behavior.
+* Validate `price` and `stock` are numeric.
+* Use UTF‑8 encoding.
+
+Example helper command (backend):
+
+```bash
+node scripts/importCsv.js path/to/sample-products.csv
+```
+
+---
+
+## Security & best practices
+
+* Use HTTPS for production.
+* Store refresh tokens in HttpOnly secure cookies where possible. Avoid storing access tokens in `localStorage`.
+* Hash passwords with `bcrypt`.
+* Validate all inputs (use `zod` or `joi`).
+* Limit endpoints by role (RBAC checks in middleware).
+* Rate-limit endpoints that could be abused.
+
+---
+
+## Testing & QA
+
+* Unit test controllers and services (Jest).
+* Integration tests for main API flows (supertest + in-memory MongoDB).
+* Manual E2E test: create product → create sale → verify stock decrement → generate receipt.
+
+---
+
+## Deployment checklist
+
+* Configure environment variables in hosting provider (Render / Cloud Run / Heroku).
+* Use a managed MongoDB (Atlas) in production.
+* Enable HTTPS and set proper CORS origin list.
+* Setup automatic backups for database.
+* Set up a CI pipeline (GitHub Actions) for lint, build, test, and deploy.
+
+---
+
+## Troubleshooting
+
+* **Cannot connect to MongoDB:** verify `MONGODB_URI` and network access (Atlas IP whitelist or VPC).
+* **CORS errors:** ensure frontend origin is allowed in backend CORS settings.
+* **JWT errors on reload:** implement refresh-token flow and store refresh token in secure cookie.
+
+---
+
+## Next deliverables I can create for you (pick any)
+
+* Full project skeleton (backend + frontend) with routes and bare UI.
+* CSV ingestion script and a sample CSV file.
+* Small React POS demo with barcode scanning and cart management.
+* One‑page PDF roadmap for the client.
+
+Tell me which one you want and I will generate it.
+
+---
+
+## License & credits
+
+MIT License — feel free to reuse and adapt. Built with ❤️ using React, Node.js, and MongoDB.
+
+---
+
+*Document created for: Smart Inventory & Billing System — README.md*
