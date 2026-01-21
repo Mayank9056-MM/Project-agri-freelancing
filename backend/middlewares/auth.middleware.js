@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.model.js";
 
-export const verifyAuth = async (req, _, next) => {
+export const verifyAuth = async (req, res, next) => {
   const accessToken =
     req.cookies.accessToken ||
     req.header("Authorization")?.replace("Bearer ", ""); // if sent from header/mobile
@@ -32,7 +32,7 @@ export const verifyAuth = async (req, _, next) => {
   }
 };
 
-export const verifyAdmin = (req, _, next) => {
+export const verifyAdmin = (req, res, next) => {
   if (req.user.role === "admin") return next();
   return res.status(403).json({
     success: false,
